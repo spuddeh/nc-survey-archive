@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "gen:manifest": "node scripts/gen-manifest.mjs manifest.json > manifest.next.json",
+    "delete:frames": "node scripts/delete-frames.mjs",
     "serve": "npx --yes serve@latest ."
   },
   "devDependencies": {

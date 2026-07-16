@@ -1,0 +1,85 @@
+# Delete frames from the archive — manual dispatch only.
+#
+# Thin runner around scripts/delete-frames.mjs (the single implementation):
+# removes each frame's R2 object + _thumb derivative and prunes its
+# manifest.json entry, committing the pruned manifest back to the branch.
+# Dry run unless "apply" is ticked — run once to preview, again to delete.
+#
+# Scoped to the repository owner: the job refuses any other actor. (Note this
+# guard lives in the workflow file itself — anyone granted write access could
+# edit it away. If collaborators are ever added, move the R2_* secrets into a
+# GitHub Environment with a required reviewer for a guard they can't bypass.)
+#
+# Needs repo secrets R2_ACCOUNT_ID, R2_ACCESS_KEY, R2_SECRET_KEY (an R2 API
+# token with Object Read & Write) and repo variable R2_BUCKET (plain config —
+# the name is already public in .env.example, so it isn't a secret).
+
+name: Delete frames
+
+on:
+  workflow_dispatch:
+    inputs:
+      files:
+        description: "Frame filenames to delete (whitespace-separated)"
+        required: true
+        type: string
+      apply:
+        description: "Actually delete (unticked = dry run)"
+        type: boolean
+        default: false
+
+# One deletion at a time — parallel runs would race on the manifest commit.
+concurrency: delete-frames
+
+permissions:
+  contents: write
+
+jobs:
+  delete:
+    runs-on: ubuntu-latest
+    if: github.actor == github.repository_owner
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Delete frames (dry run unless apply)
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY: ${{ secrets.R2_ACCESS_KEY }}
+          R2_SECRET_KEY: ${{ secrets.R2_SECRET_KEY }}
+          R2_BUCKET: ${{ vars.R2_BUCKET }}
+          FILES: ${{ inputs.files }}
+          APPLY: ${{ inputs.apply }}
+        run: |
+          FLAG=""
+          [ "$APPLY" = "true" ] && FLAG="--apply"
+          # Word-splitting on $FILES is intentional (whitespace-separated names).
+          node scripts/delete-frames.mjs $FLAG $FILES 2>&1 | tee out.log
+          status=${PIPESTATUS[0]}
+          {
+            echo "### Delete frames — $([ -n "$FLAG" ] && echo APPLIED || echo dry run)"
+            echo '```'
+            cat out.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          rm out.log
+          exit "$status"
+
+      - name: Commit pruned manifest
+        if: ${{ inputs.apply }}
+        run: |
+          if git diff --quiet manifest.json; then
+            echo "manifest.json unchanged — nothing to commit"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add manifest.json
+          git commit -m "data: prune deleted frames from manifest (via delete-frames workflow)"
+          git push
