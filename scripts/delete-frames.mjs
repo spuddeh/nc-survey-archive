@@ -15,7 +15,7 @@
 // metadata registry in sync — commit and push it afterwards.
 //
 // Uses the same .env credentials as gen-manifest.mjs; the R2 API token needs
-// Object Read & Write. Optionally CF_ZONE_ID + CF_API_TOKEN (Cache Purge
+// Object Read & Write. Optionally CF_ZONE_ID + CF_CACHE_PURGE_TOKEN (Cache Purge
 // permission) to also purge the deleted frames' public URLs from the edge
 // cache — otherwise they keep resolving for up to the Cache Rule TTL and the
 // script prints them for a manual purge.
@@ -155,12 +155,12 @@ if (kept.length !== manifest.length) {
 // optional — without them the URLs are printed for a manual dashboard purge.
 const r2Base = (readFileSync("config.js", "utf8").match(/r2Base:\s*"([^"]*)"/) || [])[1] || "";
 const urls = r2Base ? toDelete.map((k) => r2Base + k) : [];
-const { CF_ZONE_ID, CF_API_TOKEN } = process.env;
-if (urls.length && CF_ZONE_ID && CF_API_TOKEN) {
+const { CF_ZONE_ID, CF_CACHE_PURGE_TOKEN } = process.env;
+if (urls.length && CF_ZONE_ID && CF_CACHE_PURGE_TOKEN) {
   for (let i = 0; i < urls.length; i += 30) {   // purge API caps at 30 URLs/request
     const res = await fetch(`https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/purge_cache`, {
       method: "POST",
-      headers: { authorization: `Bearer ${CF_API_TOKEN}`, "content-type": "application/json" },
+      headers: { authorization: `Bearer ${CF_CACHE_PURGE_TOKEN}`, "content-type": "application/json" },
       body: JSON.stringify({ files: urls.slice(i, i + 30) })
     });
     const body = await res.json();
@@ -171,7 +171,7 @@ if (urls.length && CF_ZONE_ID && CF_API_TOKEN) {
   }
   console.log(`Purged ${urls.length} URL(s) from the edge cache — direct links are dead now too.`);
 } else if (urls.length) {
-  console.log("\nNo CF_ZONE_ID / CF_API_TOKEN set — the edge cache still serves these URLs (up to the Cache Rule TTL).");
+  console.log("\nNo CF_ZONE_ID / CF_CACHE_PURGE_TOKEN set — the edge cache still serves these URLs (up to the Cache Rule TTL).");
   console.log("Purge them manually (dashboard → Caching → Purge by URL):");
   urls.forEach((u) => console.log("  " + u));
 }

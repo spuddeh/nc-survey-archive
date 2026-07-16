@@ -129,7 +129,7 @@ when the `/api/manifest` edge cache expires (~60s).
 **Edge cache caveat:** deleting the R2 object does not delete Cloudflare's
 cached copies — the Cache Rule serves images with a month-long TTL, so a
 deleted frame's direct URL keeps resolving until purged. With `CF_ZONE_ID` +
-`CF_API_TOKEN` set (zone token with Cache Purge permission; also works as repo
+`CF_CACHE_PURGE_TOKEN` set (zone token with Cache Purge permission; also works as repo
 secrets for the workflow), the script purges the URLs automatically; without
 them it prints the URLs for a manual purge (dashboard → Caching → Purge by
 URL). Purging an original image also purges its `cdn-cgi` resized variants.
