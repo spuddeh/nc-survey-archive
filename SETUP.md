@@ -89,18 +89,46 @@ the binding exists it safely falls back to the committed `manifest.json`.
 Frame dates then come straight from R2 (`o.uploaded`) — `PENDING SYNC`
 disappears and *Recent* sort works, with zero manual steps on future uploads.
 
-### Per-frame tags (optional)
-Defaults come from `config.js` (surveyor `Spuddeh`, feed `BASELINE`, project /
-stage fallbacks). To override specific frames, add entries to `tags.json`
-(keyed by filename) and push:
-```json
-{ "kabuki_roof__t0002_00004.webp": { "project": "Skyline Bloom", "feed": "AUGMENTED", "surveyor": "Spuddeh" } }
-```
-The Function merges these onto the live listing.
+### Per-frame tags
 
-> The `scripts/gen-manifest.mjs` generator still exists for regenerating the
-> static `manifest.json` fallback by hand, but it is no longer part of the
-> normal flow.
+All per-frame metadata (project / stage / surveyor / time / weather / fov /
+feed) lives in the committed `manifest.json` — one entry per frame, no separate
+tags file and no defaults. Edit the frame's entry and push:
+
+```json
+{ "file": "kabuki_roof__t0002_00004.webp", "time": "22:30", "weather": "Clear", "fov": "100°", "project": "Skyline Bloom", "feed": "AUGMENTED" }
+```
+
+The Function merges these onto the live R2 listing. A frame with no entry (or a
+missing field) renders as `UNLOGGED` in the app — visible, filterable, and easy
+to backfill later.
+
+> When regenerating with `scripts/gen-manifest.mjs`, always pass the existing
+> manifest (`node scripts/gen-manifest.mjs manifest.json > manifest.next.json`)
+> so per-frame tags are preserved.
+
+### Deleting frames
+
+The site lists the bucket live, so a frame is gone only once its R2 object is.
+`scripts/delete-frames.mjs` handles the whole removal — R2 object, `_thumb`
+derivative, and the `manifest.json` entry — and is a dry run unless `--apply`
+is passed (needs Object Read & Write on the R2 token):
+
+```bash
+node scripts/delete-frames.mjs kabuki_street__t0001_00002.webp          # preview
+node scripts/delete-frames.mjs --apply kabuki_street__t0001_00002.webp  # delete
+```
+
+Commit and push the pruned `manifest.json` afterwards. The live site updates
+when the `/api/manifest` edge cache expires (~60s).
+
+No local setup? The **Delete frames** workflow (Actions tab) runs the same
+script from the browser: dispatch once with *apply* unticked to preview, again
+ticked to delete — it commits the pruned `manifest.json` itself. Only the
+repository owner can run it. One-time setup under *Settings → Secrets and
+variables → Actions*: `R2_ACCOUNT_ID`, `R2_ACCESS_KEY`, `R2_SECRET_KEY` as
+**secrets** (token needs Object Read & Write) and `R2_BUCKET` as a
+**variable** (it's plain config, already public in `.env.example`).
 
 ---
 

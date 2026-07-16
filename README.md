@@ -21,23 +21,25 @@ gallery reads a JSON manifest.
 ```text
 index.html              entry — links the static CSS + config, loads the app module
 config.js               window.SURVEY_CONFIG (R2 base, manifest, thumbnails…)
-manifest.json           frame list + per-frame tags (regenerated from R2)
+manifest.json           frame list + per-frame tags — the single metadata source
 assets/
   css/
     theme.css           design tokens (the shared Night Corp palette + type)
     style.css           layout & components (all visual rules live here)
   js/
+    constants.js        data tables (districts, facets, icons) + tuning values
     app.js              the gallery: state, filtering, lightbox, deep-links
   fonts/                Night Corp Display (SIL OFL 1.1)
   img/                  logo + favicons (survey gold / cyan)
 uploads/                sample frames — used only when config.r2Base is ""
 scripts/
   gen-manifest.mjs      list the R2 bucket → manifest.json (optional)
+  delete-frames.mjs     remove frames: R2 object + thumb + manifest entry
 _redirects              SPA fallback
 _routes.json            routes /api/* to the manifest Pages Function
 functions/
-  api/manifest.js       lists the R2 bucket live → /api/manifest (dates + new frames)
-tags.json               optional per-frame tag overrides merged by the Function
+  api/manifest.js       lists the R2 bucket live → /api/manifest (dates + new frames,
+                        merged with the per-frame tags in manifest.json)
 ```
 
 CSS, `config.js`, and `manifest.json` are **linked, not bundled**, on purpose:
@@ -53,7 +55,10 @@ retune tokens, swap the R2 base, or republish the frame list without touching
 | `thumbnails` | `"cf"` Cloudflare Image Resizing · `"suffix"` pre-made `_thumb` files · `"off"` full-res in grid |
 | `thumbWidth` | Thumbnail width for `"cf"` mode |
 | `newWindowDays` | Frames dated within N days show a **NEW** tag |
-| `defaultProject` / `defaultStage` | Corp-themed fallback tags when a frame has none |
+
+There are no default project / stage / surveyor values: metadata a frame does
+not have renders as `UNLOGGED` and is filterable as such. Fill the real value
+in the manifest entry instead.
 
 The committed defaults (`r2Base: ""`, `thumbnails: "off"`) make the repo work
 the moment it is cloned. **For production, set `r2Base` to the R2 URL and
