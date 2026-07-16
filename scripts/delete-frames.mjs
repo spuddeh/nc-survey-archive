@@ -115,7 +115,11 @@ if (missing) {
 }
 
 if (!apply) {
-  console.log(`\nDry run: would delete ${toDelete.length} object(s) and prune ${files.filter((f) => inManifest.has(f)).length} manifest entr(ies). Rerun with --apply.`);
+  console.log(`\nDry run: would delete ${toDelete.length} object(s) and prune ${files.filter((f) => inManifest.has(f)).length} manifest entr(ies).`);
+  // Hand back the normalised keys as a ready-to-paste apply string — pasted
+  // URLs have already been reduced to bare filenames by this point.
+  console.log(`\nTo apply — workflow: paste this into "files" and tick apply · local: rerun with --apply:\n`);
+  console.log(files.join(" "));
   process.exit(0);
 }
 
