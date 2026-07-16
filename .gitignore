@@ -1,6 +1,9 @@
 # dependencies (dev-only tooling — the site itself has no build step)
 node_modules/
 
+# wrangler local dev cache/state (from `wrangler pages dev`)
+.wrangler/
+
 # secrets — R2 API tokens / S3 creds for the manifest generator & uploads
 .env
 .env.*
