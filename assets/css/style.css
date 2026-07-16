@@ -192,18 +192,17 @@ a:hover { color: var(--nc-cyan-soft); }
   .nc-lb-nav { display: none; }
   .nc-lb-fig { max-width: 100%; width: 100%; }
   .nc-lb-fig img { max-height: 66vh; width: 100%; }
-  /* Overlaid swipe-hint arrows on the image — also tappable. */
+  /* Overlaid swipe-hint arrows — thin, borderless, edge-flush scrims that
+     stay out of the way of the image. Also tappable. */
   .nc-lb-swipe {
     display: flex; align-items: center; justify-content: center;
     position: absolute; top: 50%; transform: translateY(-50%); z-index: 3;
-    width: 44px; height: 44px; padding-bottom: 3px;
-    border: 1px solid rgba(0,240,255,0.4); border-radius: 50%;
-    background: rgba(6,13,24,0.5); color: var(--nc-cyan);
-    font-family: var(--nc-mono); font-size: 24px; line-height: 1; cursor: pointer;
-    -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
+    width: 30px; height: 90px; padding: 0; border: none; border-radius: 0;
+    background: rgba(6,13,24,0.2); color: rgba(224,232,247,0.65);
+    font-family: var(--nc-mono); font-size: 26px; line-height: 1; cursor: pointer;
   }
-  .nc-lb-swipe.prev { left: 10px; }
-  .nc-lb-swipe.next { right: 10px; }
+  .nc-lb-swipe.prev { left: 0; }
+  .nc-lb-swipe.next { right: 0; }
   .nc-lb-meta { flex-direction: column; align-items: stretch; gap: 14px; padding-top: 14px; }
   .nc-lb-meta-r { justify-content: space-between; }
   .nc-lb-facts { gap: 8px 16px; font-size: 13px; }
