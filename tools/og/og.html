@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600&family=Fira+Code:wght@500&display=swap" rel="stylesheet">
+<style>
+@font-face {
+  font-family: 'Night Corp Display';
+  src: url('NightCorpDisplay-Regular.woff2') format('woff2');
+  font-weight: normal; font-display: block;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html,body { width:1200px; height:630px; overflow:hidden; background:#0a192f; }
+.card { position:relative; width:1200px; height:630px;
+  background:url('bg.jpg') center/cover no-repeat; background-color:#0a192f; }
+.scrim { position:absolute; inset:0;
+  background:linear-gradient(to top, rgba(6,13,24,0.94) 0%, rgba(6,13,24,0.74) 22%, rgba(6,13,24,0.16) 46%, rgba(6,13,24,0) 64%); }
+.block { position:absolute; left:76px; bottom:62px; }
+.tag { font-family:'Fira Code',monospace; font-weight:500; font-size:16px;
+  letter-spacing:0.2em; color:#00f0ff; text-transform:uppercase; margin-bottom:16px; }
+.headline { font-family:'Night Corp Display','Orbitron',sans-serif; font-size:86px;
+  letter-spacing:0.03em; color:#e6f1ff; line-height:0.92; text-shadow:0 2px 26px rgba(0,0,0,0.55); }
+.rule { width:98px; height:3px; background:#00f0ff; margin:24px 0 16px; box-shadow:0 0 10px rgba(0,240,255,0.6); }
+.tagline { font-family:'Rajdhani',sans-serif; font-weight:500; font-size:31px;
+  letter-spacing:0.02em; color:#9fb3d1; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="scrim"></div>
+  <div class="block">
+    <div class="tag">Night Corp // Urban Survey Division</div>
+    <div class="headline">SURVEY ARCHIVE</div>
+    <div class="rule"></div>
+    <div class="tagline">A visual reference registry of Night City</div>
+  </div>
+</div>
+</body>
+</html>
