@@ -13,9 +13,11 @@
 //   R2_SECRET_KEY   R2 secret access key
 //   R2_BUCKET       bucket name (e.g. nc-survey)
 //
-// Project / stage / feed tags are NOT derivable from the bucket, so this
-// preserves any you have already set: pass the existing manifest.json as the
-// first arg and its per-file tags are merged onto the fresh listing.
+// Per-frame tags (project / stage / surveyor / time / weather / fov / feed)
+// are NOT derivable from the bucket, so this preserves any you have already
+// set: pass the existing manifest.json as the first arg and its per-file tags
+// are merged onto the fresh listing. ALWAYS pass it — regenerating without it
+// strips every tag.
 //
 //   node scripts/gen-manifest.mjs manifest.json > manifest.next.json
 
@@ -59,12 +61,16 @@ do {
     if (!/\.(webp|jpg|jpeg|png)$/i.test(o.Key)) continue;   // skip thumbs/derivatives if you suffix them
     if (/_thumb\./i.test(o.Key)) continue;
     const p = prev[o.Key] || {};
+    const keep = (k) => (p[k] != null ? { [k]: p[k] } : {});
     out.push({
       file: o.Key,
-      ...(p.project ? { project: p.project } : {}),
-      ...(p.stage ? { stage: p.stage } : {}),
-      ...(p.surveyor ? { surveyor: p.surveyor } : {}),
-      feed: p.feed || "BASELINE",
+      ...keep("project"),
+      ...keep("stage"),
+      ...keep("surveyor"),
+      ...keep("time"),
+      ...keep("weather"),
+      ...keep("fov"),
+      ...keep("feed"),
       date: o.LastModified.toISOString()
     });
   }

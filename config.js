@@ -34,13 +34,9 @@ window.SURVEY_CONFIG = {
   thumbWidth: 640,
 
   // Frames whose date is within this many days show a NEW tag (needs a real date).
-  newWindowDays: 3,
+  newWindowDays: 3
 
-  // Corp-themed fallbacks when a frame has no project / stage assigned.
-  defaultProject: "Project Nightlight",
-  defaultStage: "Reference Sweep",
-
-  // Surveyor = the handle of whoever captured the frame. Per-frame `surveyor`
-  // in the manifest wins; this is the fallback when a frame has none.
-  defaultSurveyor: "Spuddeh"
+  // There are deliberately NO default project / stage / surveyor values.
+  // Missing metadata stays missing and renders as the UNLOGGED fallback —
+  // baked-in defaults would hide gaps and mis-file frames in the filters.
 };
