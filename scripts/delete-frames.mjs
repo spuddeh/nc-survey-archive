@@ -15,7 +15,10 @@
 // metadata registry in sync — commit and push it afterwards.
 //
 // Uses the same .env credentials as gen-manifest.mjs; the R2 API token needs
-// Object Read & Write.
+// Object Read & Write. Optionally CF_ZONE_ID + CF_API_TOKEN (Cache Purge
+// permission) to also purge the deleted frames' public URLs from the edge
+// cache — otherwise they keep resolving for up to the Cache Rule TTL and the
+// script prints them for a manual purge.
 
 import { S3Client, HeadObjectCommand, DeleteObjectsCommand, ListObjectsV2Command } from "@aws-sdk/client-s3";
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
@@ -124,10 +127,15 @@ if (!apply) {
 }
 
 // ── delete ─────────────────────────────────────────────
-await s3.send(new DeleteObjectsCommand({
+const del = await s3.send(new DeleteObjectsCommand({
   Bucket: R2_BUCKET,
   Delete: { Objects: toDelete.map((Key) => ({ Key })), Quiet: true }
 }));
+// Quiet mode still reports failures — don't let a partial delete pass silently.
+if (del.Errors?.length) {
+  del.Errors.forEach((e) => console.error(`Failed to delete ${e.Key}: ${e.Code} — ${e.Message}`));
+  process.exit(1);
+}
 console.log(`\nDeleted ${toDelete.length} object(s) from ${R2_BUCKET}.`);
 
 const doomed = new Set(files);
@@ -136,4 +144,35 @@ if (kept.length !== manifest.length) {
   writeFileSync("manifest.json", "[\n" + kept.map((e) => JSON.stringify(e)).join(",\n") + "\n]\n");
   console.log(`Pruned ${manifest.length - kept.length} entr(ies) from manifest.json — commit and push it.`);
 }
-console.log("Frames disappear from the live site when the /api/manifest edge cache expires (~60s).");
+
+// ── purge the edge cache ───────────────────────────────
+// Deleting the R2 object does NOT delete Cloudflare's cached copies: the Cache
+// Rule serves images with a month-long TTL, so a deleted frame keeps resolving
+// at its public URL until purged. (The gallery itself is clean within ~60s —
+// /api/manifest lists the bucket live.) Purging the original URL also purges
+// its cdn-cgi/image resized variants.
+// The public base comes from config.js (single source); purge credentials are
+// optional — without them the URLs are printed for a manual dashboard purge.
+const r2Base = (readFileSync("config.js", "utf8").match(/r2Base:\s*"([^"]*)"/) || [])[1] || "";
+const urls = r2Base ? toDelete.map((k) => r2Base + k) : [];
+const { CF_ZONE_ID, CF_API_TOKEN } = process.env;
+if (urls.length && CF_ZONE_ID && CF_API_TOKEN) {
+  for (let i = 0; i < urls.length; i += 30) {   // purge API caps at 30 URLs/request
+    const res = await fetch(`https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/purge_cache`, {
+      method: "POST",
+      headers: { authorization: `Bearer ${CF_API_TOKEN}`, "content-type": "application/json" },
+      body: JSON.stringify({ files: urls.slice(i, i + 30) })
+    });
+    const body = await res.json();
+    if (!body.success) {
+      console.error("Edge cache purge failed:", JSON.stringify(body.errors));
+      process.exit(1);
+    }
+  }
+  console.log(`Purged ${urls.length} URL(s) from the edge cache — direct links are dead now too.`);
+} else if (urls.length) {
+  console.log("\nNo CF_ZONE_ID / CF_API_TOKEN set — the edge cache still serves these URLs (up to the Cache Rule TTL).");
+  console.log("Purge them manually (dashboard → Caching → Purge by URL):");
+  urls.forEach((u) => console.log("  " + u));
+}
+console.log("\nFrames disappear from the live site when the /api/manifest edge cache expires (~60s).");

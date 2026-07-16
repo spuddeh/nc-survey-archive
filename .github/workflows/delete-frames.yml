@@ -13,6 +13,10 @@
 # Needs repo secrets R2_ACCOUNT_ID, R2_ACCESS_KEY, R2_SECRET_KEY (an R2 API
 # token with Object Read & Write) and repo variable R2_BUCKET (plain config —
 # the name is already public in .env.example, so it isn't a secret).
+# Optional secrets CF_ZONE_ID + CF_API_TOKEN (Cache Purge permission) let the
+# script also purge deleted frames' public URLs from the edge cache; without
+# them the URLs keep resolving for up to the Cache Rule TTL (~a month) and are
+# printed for a manual dashboard purge.
 
 name: Delete frames
 
@@ -54,6 +58,8 @@ jobs:
           R2_ACCESS_KEY: ${{ secrets.R2_ACCESS_KEY }}
           R2_SECRET_KEY: ${{ secrets.R2_SECRET_KEY }}
           R2_BUCKET: ${{ vars.R2_BUCKET }}
+          CF_ZONE_ID: ${{ secrets.CF_ZONE_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           FILES: ${{ inputs.files }}
           APPLY: ${{ inputs.apply }}
         run: |
