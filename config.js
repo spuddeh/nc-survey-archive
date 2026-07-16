@@ -8,9 +8,8 @@
 // /uploads/ folder, and thumbnails to "off".
 window.SURVEY_CONFIG = {
   // Public base URL of the R2 bucket / custom domain, WITH trailing slash.
-  // "" → serve from the local uploads/ folder (works on clone, no R2 needed).
   // "" → serve from the local uploads/ folder (local dev, no R2 needed).
-  r2Base: "https://survey.nczoning.net/",
+  r2Base: "https://img.nczoning.net/",
 
   // JSON served at (r2Base + manifest) listing the frames. Array of entries,
   // each a filename string OR an object:

@@ -5,7 +5,8 @@ The site code is done, committed, and pushed to
 actions (dashboard) plus uploading the images. Do them in this order.
 
 Fixed facts for this project:
-- **Images host (R2 custom domain):** `survey.nczoning.net`
+- **Site (Pages custom domain):** `survey.nczoning.net`
+- **Images host (R2 custom domain):** `img.nczoning.net`
 - **Zone:** `nczoning.net`
 - **Bucket name used below:** `nc-survey`
 - **Image library (keepers, flattened for upload):** `E:\Cyberpunk Cityscapes\_r2-upload` — **1902** `.webp`, 374 MB
@@ -16,13 +17,13 @@ Fixed facts for this project:
 ## 1. Create the R2 bucket
 Cloudflare dashboard → **R2** → *Create bucket* → name `nc-survey` → Create.
 
-## 2. Bind the custom domain `survey.nczoning.net`
+## 2. Bind the custom domain `img.nczoning.net`
 R2 → bucket `nc-survey` → **Settings** → *Public access* → **Custom Domains** →
-*Connect Domain* → `survey.nczoning.net`. Cloudflare adds the DNS record on the
+*Connect Domain* → `img.nczoning.net`. Cloudflare adds the DNS record on the
 `nczoning.net` zone automatically. Wait until it shows **Active**.
 
 > This is required for on-the-fly thumbnails — they are fetched through the
-> zone at `survey.nczoning.net/cdn-cgi/image/...`.
+> zone at `img.nczoning.net/cdn-cgi/image/...`.
 
 ## 3. Enable Image Transformations on the zone
 Dashboard → select `nczoning.net` → **Images** → *Transformations* → enable
@@ -58,7 +59,7 @@ Get-ChildItem *.webp | ForEach-Object {
 of `_r2-upload` (the files, not the folder). Fine but slow for 1902 files.
 
 Verify one object resolves publicly (after step 2 is Active):
-`https://survey.nczoning.net/kabuki_roof__t0000_00001.webp` → 200.
+`https://img.nczoning.net/kabuki_roof__t0000_00001.webp` → 200.
 
 ## 5. Connect the site to Cloudflare Pages
 Dashboard → **Workers & Pages** → *Create* → **Pages** → *Connect to Git* →
@@ -89,7 +90,7 @@ Pages redeploys automatically on push.
 
 ## Verify (live)
 1. Open the Pages URL → grid loads all 1902 frames.
-2. A grid image request is `survey.nczoning.net/cdn-cgi/image/width=640,…/‹file›`
+2. A grid image request is `img.nczoning.net/cdn-cgi/image/width=640,…/‹file›`
    → 200 (resized). Lightbox loads the full-res original.
 3. Click a District → its subdistricts reveal; counts update.
 4. Open a frame → URL gets `#NC-…`; reload that URL → same frame opens.

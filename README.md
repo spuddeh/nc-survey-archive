@@ -42,7 +42,7 @@ retune tokens, swap the R2 base, or republish the frame list without touching
 
 | Key | Meaning |
 | --- | --- |
-| `r2Base` | Public base URL of the bucket, trailing slash. `""` = serve from `uploads/` (dev). Prod: `https://survey.nczoning.net/` |
+| `r2Base` | Public base URL of the bucket, trailing slash. `""` = serve from `uploads/` (dev). Prod: `https://img.nczoning.net/` |
 | `manifest` | JSON served at `r2Base + manifest` listing frames. `""` = use the inline sample in `app.js` |
 | `thumbnails` | `"cf"` Cloudflare Image Resizing · `"suffix"` pre-made `_thumb` files · `"off"` full-res in grid |
 | `thumbWidth` | Thumbnail width for `"cf"` mode |
@@ -135,8 +135,9 @@ Cloudflare Pages, free tier, Git integration.
 
 - **Build command** — none (leave empty).
 - **Output directory** — `/` (repo root).
-- Put the images in an R2 bucket exposed at `survey.nczoning.net` (custom domain
-  on the bucket, or an R2 binding). Set `config.js` `r2Base` to match.
+- The site is served at `survey.nczoning.net` (Pages custom domain). Put the
+  images in an R2 bucket exposed at `img.nczoning.net` (custom domain on the
+  bucket, or an R2 binding). Set `config.js` `r2Base` to match.
 - For `thumbnails: "cf"`, enable **Image Resizing** on the zone — the grid then
   requests `‹r2Base›/cdn-cgi/image/width=640,…/‹file›`. No pre-processing.
 - Download links are plain `GET`s on the original object; R2 egress to the public
