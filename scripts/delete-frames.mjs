@@ -1,8 +1,13 @@
 // delete-frames.mjs — remove frames from the archive: R2 object, its _thumb
 // derivative (if any), and the manifest.json entry, in one step.
 //
-//   node scripts/delete-frames.mjs <file...>            dry run (default)
-//   node scripts/delete-frames.mjs --apply <file...>    actually delete
+//   node scripts/delete-frames.mjs <file-or-url...>            dry run (default)
+//   node scripts/delete-frames.mjs --apply <file-or-url...>    actually delete
+//
+// Accepts bare filenames OR pasted image URLs — the full-res form
+// (https://img.nczoning.net/<file>) and the thumbnail form
+// (…/cdn-cgi/image/<options>/<file>) both normalise to the object key, so you
+// can copy the address straight from the browser and know it's the right frame.
 //
 // The site lists the R2 bucket live via /api/manifest, so the bucket delete is
 // what removes a frame from the gallery (visible within the Function's ~60s
@@ -23,11 +28,25 @@ if (existsSync(".env")) {
   }
 }
 
+// Normalise one input token to a bucket key. Accepts a bare filename or a
+// pasted image URL (full-res or /cdn-cgi/image/<options>/ thumbnail form).
+// Tokens are whitespace-separated; stray trailing commas from pasted lists are
+// stripped. Do NOT split on commas — cdn-cgi option segments contain them.
+const normalize = (raw) => {
+  let s = raw.trim().replace(/^["']+|["',]+$/g, "");
+  if (/^https?:\/\//i.test(s)) {
+    let p = decodeURIComponent(new URL(s).pathname).replace(/^\/+/, "");
+    p = p.replace(/^cdn-cgi\/image\/[^/]+\//, "");   // unwrap CF Image Resizing
+    s = p;
+  }
+  return s;
+};
+
 const args = process.argv.slice(2);
 const apply = args.includes("--apply");
-const files = args.filter((a) => a !== "--apply");
+const files = args.filter((a) => a !== "--apply").map(normalize).filter(Boolean);
 if (!files.length) {
-  console.error("Usage: node scripts/delete-frames.mjs [--apply] <file...>");
+  console.error("Usage: node scripts/delete-frames.mjs [--apply] <file-or-url...>");
   process.exit(1);
 }
 
@@ -47,7 +66,11 @@ const s3 = new S3Client({
 // or wrong bucket name makes every HEAD fail and every frame reads as
 // "NOT IN BUCKET" — a credentials problem masquerading as missing files.
 try {
-  await s3.send(new ListObjectsV2Command({ Bucket: R2_BUCKET, MaxKeys: 1 }));
+  const probe = await s3.send(new ListObjectsV2Command({ Bucket: R2_BUCKET, MaxKeys: 1 }));
+  const sample = probe.Contents?.[0]?.Key ?? "(bucket is empty)";
+  // Print what we can actually see: if the sample key looks like it belongs to
+  // a different project, the token/bucket is wrong — the frames aren't missing.
+  console.log(`Bucket "${R2_BUCKET}": reachable — sample key: ${sample}\n`);
 } catch (e) {
   console.error(`Cannot access bucket "${R2_BUCKET}": ${e.name} (HTTP ${e.$metadata?.httpStatusCode ?? "?"}).`);
   console.error("Check the R2_* credentials and bucket name — the token needs Object Read & Write on this bucket.");

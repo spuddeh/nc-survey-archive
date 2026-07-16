@@ -119,6 +119,10 @@ node scripts/delete-frames.mjs kabuki_street__t0001_00002.webp          # previe
 node scripts/delete-frames.mjs --apply kabuki_street__t0001_00002.webp  # delete
 ```
 
+Inputs can be bare filenames **or pasted image URLs** (right-click the frame →
+copy image address) — both the full-res and the `cdn-cgi` thumbnail forms
+normalise to the object key, which removes filename-typo risk entirely.
+
 Commit and push the pruned `manifest.json` afterwards. The live site updates
 when the `/api/manifest` edge cache expires (~60s).
 

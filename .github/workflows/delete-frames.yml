@@ -20,7 +20,7 @@ on:
   workflow_dispatch:
     inputs:
       files:
-        description: "Frame filenames to delete (whitespace-separated)"
+        description: "Frames to delete — filenames or pasted image URLs (full-res or thumbnail form), whitespace-separated. The box is single-line (GitHub limit) but scrolls; paste as many as needed."
         required: true
         type: string
       apply:
@@ -43,7 +43,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       - run: npm ci
