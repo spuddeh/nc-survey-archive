@@ -12,7 +12,7 @@
 // Uses the same .env credentials as gen-manifest.mjs; the R2 API token needs
 // Object Read & Write.
 
-import { S3Client, HeadObjectCommand, DeleteObjectsCommand } from "@aws-sdk/client-s3";
+import { S3Client, HeadObjectCommand, DeleteObjectsCommand, ListObjectsV2Command } from "@aws-sdk/client-s3";
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 
 // Minimal .env loader (no dependency) — same as gen-manifest.mjs.
@@ -43,9 +43,27 @@ const s3 = new S3Client({
   credentials: { accessKeyId: R2_ACCESS_KEY, secretAccessKey: R2_SECRET_KEY }
 });
 
+// Preflight: prove we can reach the bucket at all. Without this, a bad token
+// or wrong bucket name makes every HEAD fail and every frame reads as
+// "NOT IN BUCKET" — a credentials problem masquerading as missing files.
+try {
+  await s3.send(new ListObjectsV2Command({ Bucket: R2_BUCKET, MaxKeys: 1 }));
+} catch (e) {
+  console.error(`Cannot access bucket "${R2_BUCKET}": ${e.name} (HTTP ${e.$metadata?.httpStatusCode ?? "?"}).`);
+  console.error("Check the R2_* credentials and bucket name — the token needs Object Read & Write on this bucket.");
+  process.exit(1);
+}
+
 const exists = async (Key) => {
   try { await s3.send(new HeadObjectCommand({ Bucket: R2_BUCKET, Key })); return true; }
-  catch { return false; }
+  catch (e) {
+    const code = e.$metadata?.httpStatusCode;
+    if (code === 404 || e.name === "NotFound") return false;   // genuinely absent
+    // Anything else (403, network, throttling) is NOT "file missing" — abort
+    // rather than report a misleading per-file verdict.
+    console.error(`Cannot check "${Key}": ${e.name} (HTTP ${code ?? "?"}) — access problem, not a missing file.`);
+    process.exit(1);
+  }
 };
 const thumbOf = (f) => f.replace(/\.(webp|jpg|jpeg|png)$/i, "_thumb.$1");
 
