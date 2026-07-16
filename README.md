@@ -1,13 +1,16 @@
 # NC Survey Archive
 
-Companion visual-reference registry for the [NC Zoning Board](https://nczoning.net)
-map project — the **Night Corp Urban Survey Division**. A filterable gallery of
-Night City night-lighting captures (all 22:30, clear weather), doubling as a
-reference archive for the map's 3D lighting work.
+A filterable gallery of Night City **cityscape captures**, presented as the
+**Night Corp Urban Survey Division**. Subject-agnostic and open to broadening;
+Night Corp branded to match the [NC Zoning Board](https://nczoning.net) map and
+[Academy](https://academy.nczoning.net).
 
-Night Corp branded to match the [Zoning Board](https://nczoning.net) and
-[Academy](https://academy.nczoning.net). Free, static, hosted on Cloudflare
-Pages. Images live in Cloudflare R2; the gallery reads a JSON manifest.
+The launch set is a controlled night-lighting reference for the map's 3D lighting
+work (all 22:30, clear weather), but that is the reason for the first batch, not
+the archive's identity, so the copy stays evergreen as the set grows.
+
+Free, static, hosted on Cloudflare Pages. Images live in Cloudflare R2; the
+gallery reads a JSON manifest.
 
 > **No build step.** Plain HTML + CSS + one ES module. Clone and open — there is
 > nothing to compile, no `node_modules`, no framework to untangle. The manifest

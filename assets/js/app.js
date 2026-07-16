@@ -1,9 +1,9 @@
 // NC Survey Archive — gallery app (vanilla ES module, no build step).
 //
-// Ported 1:1 from the Claude Design authoring component. State + rendering are
-// plain DOM; clicks are handled by delegation on document.body, so re-renders
-// never leave dangling listeners. Config comes from window.SURVEY_CONFIG
-// (config.js); frame data comes from the R2 manifest, falling back to SAMPLE.
+// State + rendering are plain DOM; clicks are handled by delegation on
+// document.body, so re-renders never leave dangling listeners. Config comes from
+// window.SURVEY_CONFIG (config.js); frame data comes from the R2 manifest,
+// falling back to SAMPLE.
 
 const CFG = Object.assign({
   r2Base: "",

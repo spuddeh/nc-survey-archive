@@ -16,6 +16,13 @@ manifest.next.json
 # (a public Pages repo serves everything committed at root)
 docs/
 
+# Claude Code local setup (memory/config; never committed)
+CLAUDE.md
+.claude/
+# Guard against a stray local wiki copy — the wiki lives only in the D:\Wiki vault
+wiki/
+raw/
+
 # OS / editor cruft
 .DS_Store
 Thumbs.db
