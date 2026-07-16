@@ -20,7 +20,16 @@
 //   node scripts/gen-manifest.mjs manifest.json > manifest.next.json
 
 import { S3Client, ListObjectsV2Command } from "@aws-sdk/client-s3";
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
+
+// Minimal .env loader (no dependency) — so `npm run gen:manifest` works after
+// copying .env.example → .env, without exporting vars into the shell.
+if (existsSync(".env")) {
+  for (const line of readFileSync(".env", "utf8").split(/\r?\n/)) {
+    const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$/);
+    if (m && !process.env[m[1]]) process.env[m[1]] = m[2].replace(/^["']|["']$/g, "");
+  }
+}
 
 const { R2_ACCOUNT_ID, R2_ACCESS_KEY, R2_SECRET_KEY, R2_BUCKET } = process.env;
 if (!R2_ACCOUNT_ID || !R2_ACCESS_KEY || !R2_SECRET_KEY || !R2_BUCKET) {
@@ -54,6 +63,7 @@ do {
       file: o.Key,
       ...(p.project ? { project: p.project } : {}),
       ...(p.stage ? { stage: p.stage } : {}),
+      ...(p.surveyor ? { surveyor: p.surveyor } : {}),
       feed: p.feed || "BASELINE",
       date: o.LastModified.toISOString()
     });

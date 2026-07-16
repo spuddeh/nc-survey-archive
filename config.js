@@ -33,5 +33,9 @@ window.SURVEY_CONFIG = {
 
   // Corp-themed fallbacks when a frame has no project / stage assigned.
   defaultProject: "Project Nightlight",
-  defaultStage: "Reference Sweep"
+  defaultStage: "Reference Sweep",
+
+  // Surveyor = the handle of whoever captured the frame. Per-frame `surveyor`
+  // in the manifest wins; this is the fallback when a frame has none.
+  defaultSurveyor: "Spuddeh"
 };

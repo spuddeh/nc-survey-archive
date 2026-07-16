@@ -12,7 +12,8 @@ const CFG = Object.assign({
   thumbWidth: 640,
   newWindowDays: 14,
   defaultProject: "Project Nightlight",
-  defaultStage: "Reference Sweep"
+  defaultStage: "Reference Sweep",
+  defaultSurveyor: "Spuddeh"
 }, window.SURVEY_CONFIG || {});
 
 // Filename convention: <subdistrict>_<vantage>__t<tour>_<frame>.webp
@@ -135,6 +136,7 @@ function deriveShots(files) {
       time: "22:30", weather: "CLEAR", fov: e.fov || "100\u00b0",
       project: e.project || CFG.defaultProject,
       stage: e.stage || CFG.defaultStage,
+      surveyor: e.surveyor || CFG.defaultSurveyor,
       feed: e.feed || "BASELINE",
       date: e.date || "",
       ts: e.date ? Date.parse(e.date) : 0,
@@ -155,8 +157,9 @@ const state = {
   files: SAMPLE,
   shots: deriveShots(SAMPLE),
   sel: { district: "all", subdistrict: "all", areaKey: "all", project: "all", stage: "all", fov: "all", feed: "all" },
-  sort: "recent",
+  sort: "name",
   lb: null,               // { list, i }
+  zoom: false,            // fullscreen image zoom overlay
   narrow: window.innerWidth < 760,
   drawer: false,
   status: "NOMINAL",
@@ -298,15 +301,32 @@ function openLb(id) {
   const i = list.findIndex((s) => s.id === id);
   if (i < 0) return;
   state.lb = { list, i };
+  state.zoom = false;
   setHash(id); renderLightbox();
 }
-function closeLb() { state.lb = null; setHash(null); renderLightbox(); }
+function closeLb() { state.lb = null; state.zoom = false; setHash(null); renderLightbox(); }
 function stepLb(dir) {
   if (!state.lb) return;
   const n = state.lb.list.length;
   state.lb.i = (state.lb.i + dir + n) % n;
+  state.zoom = false;
   setHash(state.lb.list[state.lb.i].id); renderLightbox();
 }
+
+// Inline stroke icons (currentColor) for the lightbox metadata row.
+const ICONS = {
+  eye:      '<path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/>',
+  clock:    '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  sun:      '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"/>',
+  fov:      '<circle cx="12" cy="12" r="9"/><path d="M12 3v4M12 17v4M3 12h4M17 12h4"/>',
+  feed:     '<path d="M4.9 19.1a10 10 0 0 1 0-14.2M7.8 16.2a6 6 0 0 1 0-8.4M16.2 7.8a6 6 0 0 1 0 8.4M19.1 4.9a10 10 0 0 1 0 14.2"/><circle cx="12" cy="12" r="1.6"/>',
+  user:     '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+  calendar: '<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/>'
+};
+const icon = (n) => `<svg class="nc-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n] || ""}</svg>`;
+const fact = (ic, val, tip) => `<span class="nc-lb-fact" title="${esc(tip)}">${icon(ic)}<span>${esc(val)}</span></span>`;
+const titleCase = (s) => String(s || "").charAt(0) + String(s || "").slice(1).toLowerCase();
+
 function renderLightbox() {
   const host = document.getElementById("nc-lb-host");
   if (!state.lb) { host.innerHTML = ""; return; }
@@ -319,9 +339,11 @@ function renderLightbox() {
         <button class="nc-lb-close" data-act="close">\u2715 CLOSE</button>
       </div>
       <div class="nc-lb-body">
-        <button class="nc-lb-nav" data-act="prev">\u2039</button>
+        <button class="nc-lb-nav" data-act="prev" aria-label="Previous">\u2039</button>
         <div class="nc-lb-fig" data-act="stop">
-          <img src="${esc(s.url)}" alt="${esc(s.subdistrict)}" />
+          <div class="nc-lb-imgwrap" data-act="zoom" title="Click to zoom fullscreen">
+            <img src="${esc(s.url)}" alt="${esc(s.subdistrict)}" />
+          </div>
           <div class="nc-lb-meta">
             <div class="nc-lb-meta-l">
               <div class="nc-lb-titlerow">
@@ -329,12 +351,13 @@ function renderLightbox() {
                 <span class="nc-lb-tag">${esc(s.project)} \u00b7 ${esc(s.stage)}</span>
               </div>
               <div class="nc-lb-facts">
-                <span><span class="k">\u25b8</span> ${esc(s.areaLabel)}</span>
-                <span><span class="k">\u25b8</span> SCENE 22:30</span>
-                <span><span class="k">\u25b8</span> Clear</span>
-                <span><span class="k">\u25b8</span> ${esc(s.fov)} FOV</span>
-                <span><span class="k">\u25b8</span> FEED ${esc(s.feed)}</span>
-                <span><span class="k">\u25b8</span> ARCHIVED ${esc(fmtDate(s.date))}</span>
+                ${fact("eye", s.areaLabel, "Camera vantage \u2014 street level or aerial / rooftop")}
+                ${fact("clock", "Scene " + s.time, "In-game capture time")}
+                ${fact("sun", titleCase(s.weather), "Weather conditions at capture")}
+                ${fact("fov", s.fov + " FOV", "Camera field of view")}
+                ${fact("feed", "Feed " + s.feed, "BASELINE = unmodified game \u00b7 AUGMENTED = mods active")}
+                ${fact("user", s.surveyor, "Surveyor \u2014 who captured this frame")}
+                ${fact("calendar", fmtDate(s.date), "Uploaded to the archive")}
               </div>
             </div>
             <div class="nc-lb-meta-r">
@@ -343,9 +366,10 @@ function renderLightbox() {
             </div>
           </div>
         </div>
-        <button class="nc-lb-nav" data-act="next">\u203a</button>
+        <button class="nc-lb-nav" data-act="next" aria-label="Next">\u203a</button>
       </div>
-    </div>`;
+    </div>
+    ${state.zoom ? `<div class="nc-lb-zoom" data-act="unzoom" title="Click to close"><img src="${esc(s.url)}" alt="${esc(s.subdistrict)}" /></div>` : ""}`;
 }
 
 // ── header status ──────────────────────────────────────
@@ -422,15 +446,30 @@ document.body.addEventListener("click", (ev) => {
   else if (act === "close") { closeLb(); }
   else if (act === "prev") { ev.stopPropagation(); stepLb(-1); }
   else if (act === "next") { ev.stopPropagation(); stepLb(1); }
+  else if (act === "zoom") { ev.stopPropagation(); state.zoom = true; renderLightbox(); }
+  else if (act === "unzoom") { ev.stopPropagation(); state.zoom = false; renderLightbox(); }
   else if (act === "drawer") { setDrawer(!state.drawer); }
 });
 
 document.addEventListener("keydown", (e) => {
   if (!state.lb) return;
-  if (e.key === "Escape") closeLb();
+  if (e.key === "Escape") { if (state.zoom) { state.zoom = false; renderLightbox(); } else closeLb(); }
   else if (e.key === "ArrowRight") stepLb(1);
   else if (e.key === "ArrowLeft") stepLb(-1);
 });
+
+// Touch swipe in the lightbox → prev / next (disabled while zoomed).
+let _swX = 0, _swY = 0;
+document.body.addEventListener("touchstart", (e) => {
+  if (!state.lb) return;
+  const t = e.changedTouches[0]; _swX = t.clientX; _swY = t.clientY;
+}, { passive: true });
+document.body.addEventListener("touchend", (e) => {
+  if (!state.lb || state.zoom) return;
+  const t = e.changedTouches[0];
+  const dx = t.clientX - _swX, dy = t.clientY - _swY;
+  if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.4) stepLb(dx < 0 ? 1 : -1);
+}, { passive: true });
 
 window.addEventListener("resize", () => {
   const narrow = window.innerWidth < 760;
@@ -461,11 +500,32 @@ async function loadManifest() {
   } catch (_) { /* keep SAMPLE */ }
 }
 
+// Mobile: hide the header when scrolling the grid down, reveal on scroll up.
+// The app is a fixed 100svh shell — content scrolls inside #nc-main, not the
+// window — so we hook that element. The collapse itself is CSS, mobile-only.
+function initHeaderScroll() {
+  const main = document.getElementById("nc-main");
+  const app = document.getElementById("nc-approot");
+  const hdr = document.querySelector(".nc-header");
+  if (!main || !app || !hdr) return;
+  const setH = () => app.style.setProperty("--hdr-h", hdr.offsetHeight + "px");
+  setH();
+  window.addEventListener("resize", setH);
+  let last = 0;
+  main.addEventListener("scroll", () => {
+    const y = main.scrollTop;
+    if (y > last && y > 64) app.classList.add("header-hidden");
+    else if (y < last - 4) app.classList.remove("header-hidden");
+    last = y;
+  }, { passive: true });
+}
+
 // ── boot ───────────────────────────────────────────────
 renderShell();
 renderRail();
 renderGrid();
 renderStatus();
+initHeaderScroll();
 openFromHash();
 loadManifest();
 setInterval(telemetryTick, 2000);
