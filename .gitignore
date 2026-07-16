@@ -27,3 +27,6 @@ raw/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# design-phase test images — local-dev fallback only, never deployed
+uploads/
