@@ -10,7 +10,7 @@ const CFG = Object.assign({
   manifest: "manifest.json",
   thumbnails: "off",
   thumbWidth: 640,
-  newWindowDays: 14,
+  newWindowDays: 3,
   defaultProject: "Project Nightlight",
   defaultStage: "Reference Sweep",
   defaultSurveyor: "Spuddeh"
@@ -133,7 +133,9 @@ function deriveShots(files) {
       district: d.district, subdistrict: d.subdistrict,
       areaKey, areaLabel: a.label, areaShort: a.short,
       id: "NC-" + d.code + "-" + vSuf + frame,
-      time: "22:30", weather: "CLEAR", fov: e.fov || "100\u00b0",
+      // Capture metadata is per-frame data from the manifest \u2014 nothing assumed.
+      // Absent \u2192 "" here, shown as the UNKNOWN fallback at render time.
+      time: e.time || "", weather: e.weather || "", fov: e.fov || "",
       project: e.project || CFG.defaultProject,
       stage: e.stage || CFG.defaultStage,
       surveyor: e.surveyor || CFG.defaultSurveyor,
@@ -258,7 +260,7 @@ function cardHtml(shot) {
     <div class="nc-shot">
       <img src="${esc(shot.thumb)}" loading="lazy" decoding="async" alt="${esc(shot.subdistrict)}" />
       <div class="nc-bracket tl"></div><div class="nc-bracket br"></div>
-      <div class="nc-time"><span class="dot"></span>22:30</div>
+      ${shot.time ? `<div class="nc-time"><span class="dot"></span>${esc(shot.time)}</div>` : ""}
       <div class="nc-stage">${esc(shot.stage)}</div>
       ${shot.isNew ? '<div class="nc-new"><span class="dot"></span>NEW</div>' : ""}
     </div>
@@ -359,7 +361,8 @@ const ICONS = {
 };
 const icon = (n) => `<svg class="nc-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n] || ""}</svg>`;
 const fact = (ic, val, tip) => `<span class="nc-lb-fact" title="${esc(tip)}">${icon(ic)}<span>${esc(val)}</span></span>`;
-const titleCase = (s) => String(s || "").charAt(0) + String(s || "").slice(1).toLowerCase();
+// Lore-appropriate fallback when a frame genuinely has no value for a field.
+const UNKNOWN = "UNLOGGED";
 
 function renderLightbox() {
   const host = document.getElementById("nc-lb-host");
@@ -391,9 +394,9 @@ function renderLightbox() {
               </div>
               <div class="nc-lb-facts">
                 ${fact("eye", s.areaLabel, "Camera vantage \u2014 street level or aerial / rooftop")}
-                ${fact("clock", "Scene " + s.time, "In-game capture time")}
-                ${fact("sun", titleCase(s.weather), "Weather conditions at capture")}
-                ${fact("fov", s.fov + " FOV", "Camera field of view")}
+                ${fact("clock", s.time || UNKNOWN, "In-game capture time")}
+                ${fact("sun", s.weather || UNKNOWN, "Weather conditions at capture")}
+                ${fact("fov", s.fov ? s.fov + " FOV" : UNKNOWN, "Camera field of view")}
                 ${fact("feed", "Feed " + s.feed, "BASELINE = unmodified game \u00b7 AUGMENTED = mods active")}
                 ${fact("user", s.surveyor, "Surveyor \u2014 who captured this frame")}
                 ${fact("calendar", fmtDate(s.date), "Uploaded to the archive")}

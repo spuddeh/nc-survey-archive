@@ -1,1 +1,7 @@
-{}
+{
+  "_defaults": {
+    "time": "22:30",
+    "weather": "Clear",
+    "fov": "100°"
+  }
+}

@@ -34,7 +34,7 @@ window.SURVEY_CONFIG = {
   thumbWidth: 640,
 
   // Frames whose date is within this many days show a NEW tag (needs a real date).
-  newWindowDays: 14,
+  newWindowDays: 3,
 
   // Corp-themed fallbacks when a frame has no project / stage assigned.
   defaultProject: "Project Nightlight",

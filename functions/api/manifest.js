@@ -28,12 +28,15 @@ export async function onRequest(context) {
   const hit = await cache.match(cacheKey);
   if (hit) return hit;
 
-  // Optional per-frame tags (keyed by filename) from the committed /tags.json.
+  // Optional tags from the committed /tags.json: per-frame overrides keyed by
+  // filename, plus an optional "_defaults" block applied to any frame that
+  // doesn't set a field itself. All of it is data — nothing is baked into code.
   let tags = {};
   try {
     const t = await env.ASSETS.fetch(new URL("/tags.json", request.url));
     if (t.ok) tags = await t.json();
-  } catch { /* no tags file — defaults apply client-side */ }
+  } catch { /* no tags file — client-side config defaults still apply */ }
+  const defaults = tags._defaults || {};
 
   const out = [];
   let cursor;
@@ -43,12 +46,17 @@ export async function onRequest(context) {
       if (!/\.(webp|jpg|jpeg|png)$/i.test(o.key)) continue;   // images only
       if (/_thumb\./i.test(o.key)) continue;                  // skip derivatives
       const t = tags[o.key] || {};
+      const pick = (k) => (t[k] != null ? t[k] : defaults[k]);   // per-frame → default
+      const set = (k) => (pick(k) != null ? { [k]: pick(k) } : {});
       out.push({
         file: o.key,
-        ...(t.project ? { project: t.project } : {}),
-        ...(t.stage ? { stage: t.stage } : {}),
-        ...(t.surveyor ? { surveyor: t.surveyor } : {}),
-        feed: t.feed || "BASELINE",
+        ...set("project"),
+        ...set("stage"),
+        ...set("surveyor"),
+        ...set("time"),
+        ...set("weather"),
+        ...set("fov"),
+        feed: pick("feed") || "BASELINE",
         date: o.uploaded.toISOString()
       });
     }
