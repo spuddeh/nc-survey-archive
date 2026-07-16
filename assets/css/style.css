@@ -169,7 +169,10 @@ html.nc-noscroll, body.nc-noscroll { overflow: hidden; }
 @media (max-width: 760px) {
   .nc-status { display: none; }
   /* On mobile the document itself scrolls (not an inner pane) so the browser's
-     pull-to-refresh works. The header sticks to the top and auto-hides. */
+     pull-to-refresh works. Release the desktop shell's height cap + overflow
+     lock on html/body, or nothing scrolls. The header sticks + auto-hides. */
+  html { height: auto; }
+  body { height: auto; overflow: visible; }
   .nc-app { height: auto; min-height: 100svh; overflow: visible; }
   .nc-body-row { display: block; }
   .nc-main { overflow: visible; padding: 20px 18px 40px; }
