@@ -295,23 +295,57 @@ function renderGrid() {
 }
 
 // ── lightbox ───────────────────────────────────────────
-function setHash(id) { history.replaceState(null, "", id ? "#" + id : location.pathname + location.search); }
-function openLb(id) {
-  const list = currentList();
-  const i = list.findIndex((s) => s.id === id);
-  if (i < 0) return;
+// Wired into browser history so the Back button (esp. on phones) closes the
+// zoom, then the lightbox, before ever leaving the site. Opening an overlay
+// pushes a history entry; prev/next only *replaces* it (no back-button spam);
+// Back pops the entry and popstate reconciles the view.
+function lbId() { return state.lb ? state.lb.list[state.lb.i].id : null; }
+
+// Apply overlay state from an { id, zoom } pair WITHOUT touching history.
+function applyLbState(id, zoom) {
+  const list = id ? currentList() : null;
+  const i = id ? list.findIndex((s) => s.id === id) : -1;
+  if (i < 0) { state.lb = null; state.zoom = false; renderLightbox(); return; }
   state.lb = { list, i };
-  state.zoom = false;
-  setHash(id); renderLightbox();
+  state.zoom = !!zoom;
+  renderLightbox();
 }
-function closeLb() { state.lb = null; state.zoom = false; setHash(null); renderLightbox(); }
+
+function openLb(id) {
+  if (currentList().findIndex((s) => s.id === id) < 0) return;
+  history.pushState({ lb: id, zoom: false }, "", "#" + id);
+  applyLbState(id, false);
+}
+// Close by popping the pushed entry (popstate does the actual teardown).
+function closeLb() {
+  if (history.state && history.state.lb) history.back();
+  else applyLbState(null, false);
+}
 function stepLb(dir) {
-  if (!state.lb) return;
+  if (!state.lb || state.zoom) return;
   const n = state.lb.list.length;
-  state.lb.i = (state.lb.i + dir + n) % n;
-  state.zoom = false;
-  setHash(state.lb.list[state.lb.i].id); renderLightbox();
+  const i = (state.lb.i + dir + n) % n;
+  const id = state.lb.list[i].id;
+  history.replaceState({ lb: id, zoom: false }, "", "#" + id);
+  state.lb.i = i; state.zoom = false;
+  renderLightbox();
 }
+function openZoom() {
+  if (!state.lb || state.zoom) return;
+  const id = lbId();
+  history.pushState({ lb: id, zoom: true }, "", "#" + id);
+  state.zoom = true; renderLightbox();
+}
+function closeZoom() {
+  if (history.state && history.state.zoom) history.back();
+  else { state.zoom = false; renderLightbox(); }
+}
+
+// Back / forward → reconcile the overlay to whatever history entry we land on.
+window.addEventListener("popstate", (e) => {
+  const st = e.state || {};
+  applyLbState(st.lb || null, !!st.zoom);
+});
 
 // Inline stroke icons (currentColor) for the lightbox metadata row.
 const ICONS = {
@@ -448,14 +482,14 @@ document.body.addEventListener("click", (ev) => {
   else if (act === "close") { closeLb(); }
   else if (act === "prev") { ev.stopPropagation(); stepLb(-1); }
   else if (act === "next") { ev.stopPropagation(); stepLb(1); }
-  else if (act === "zoom") { ev.stopPropagation(); state.zoom = true; renderLightbox(); }
-  else if (act === "unzoom") { ev.stopPropagation(); state.zoom = false; renderLightbox(); }
+  else if (act === "zoom") { ev.stopPropagation(); openZoom(); }
+  else if (act === "unzoom") { ev.stopPropagation(); closeZoom(); }
   else if (act === "drawer") { setDrawer(!state.drawer); }
 });
 
 document.addEventListener("keydown", (e) => {
   if (!state.lb) return;
-  if (e.key === "Escape") { if (state.zoom) { state.zoom = false; renderLightbox(); } else closeLb(); }
+  if (e.key === "Escape") { if (state.zoom) closeZoom(); else closeLb(); }
   else if (e.key === "ArrowRight") stepLb(1);
   else if (e.key === "ArrowLeft") stepLb(-1);
 });
@@ -480,7 +514,15 @@ window.addEventListener("resize", () => {
 
 function openFromHash() {
   const id = (location.hash || "").replace(/^#/, "");
-  if (id) openLb(id);
+  if (!id) return;
+  if (currentList().findIndex((s) => s.id === id) < 0) return;  // frame not loaded yet
+  // Put a grid entry behind the lightbox so Back closes to the grid instead of
+  // leaving the site (covers frames opened from a shared #NC-… link).
+  if (!history.state || !history.state.lb) {
+    history.replaceState({}, "", location.pathname + location.search);
+    history.pushState({ lb: id, zoom: false }, "", "#" + id);
+  }
+  applyLbState(id, false);
 }
 
 async function loadManifest() {
