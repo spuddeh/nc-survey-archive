@@ -22,6 +22,8 @@ a:hover { color: var(--nc-cyan-soft); }
 
 /* ── Shell ─────────────────────────────────────────────── */
 .nc-app { display: flex; flex-direction: column; height: 100svh; width: 100vw; background: var(--nc-navy); overflow: hidden; }
+/* Lock document scroll while the lightbox is open (mobile document-scroll). */
+html.nc-noscroll, body.nc-noscroll { overflow: hidden; }
 .nc-body-row { display: flex; flex: 1; min-height: 0; }
 
 /* ── Header ────────────────────────────────────────────── */
@@ -166,17 +168,22 @@ a:hover { color: var(--nc-cyan-soft); }
 
 @media (max-width: 760px) {
   .nc-status { display: none; }
-  /* Header stacks to two rows: [logo + title] / [nav], and hides on scroll-down. */
+  /* On mobile the document itself scrolls (not an inner pane) so the browser's
+     pull-to-refresh works. The header sticks to the top and auto-hides. */
+  .nc-app { height: auto; min-height: 100svh; overflow: visible; }
+  .nc-body-row { display: block; }
+  .nc-main { overflow: visible; padding: 20px 18px 40px; }
+  /* Header stacks to two rows: [logo + title] / [nav], sticky + auto-hide. */
   .nc-header {
+    position: sticky; top: 0; z-index: 100;
     flex-direction: column; align-items: stretch; gap: 10px; padding: 12px 16px;
-    transition: margin-top 260ms ease, opacity 200ms ease;
+    transition: transform 260ms ease, opacity 200ms ease;
   }
   .nc-header-right { justify-content: center; gap: 18px; }
   .nc-nav { width: 100%; justify-content: center; gap: 20px; }
-  .nc-app.header-hidden .nc-header { margin-top: calc(-1 * var(--hdr-h, 96px)); opacity: 0; pointer-events: none; }
+  .nc-app.header-hidden .nc-header { transform: translateY(-100%); opacity: 0; pointer-events: none; }
   .nc-brand img { height: 34px; }
   .nc-brand-title { font-size: 19px; }
-  .nc-main { padding: 20px 18px 40px; }
   .nc-drawer-btn { display: flex; }
   .nc-rail-close { display: block; }
   .nc-rail {
@@ -197,7 +204,7 @@ a:hover { color: var(--nc-cyan-soft); }
   .nc-lb-swipe {
     display: flex; align-items: center; justify-content: center;
     position: absolute; top: 50%; transform: translateY(-50%); z-index: 3;
-    width: 30px; height: 90px; padding: 0; border: none; border-radius: 0;
+    width: 30px; height: auto; padding: 7px 0; border: none; border-radius: 0;
     background: rgba(6,13,24,0.2); color: rgba(224,232,247,0.65);
     font-family: var(--nc-mono); font-size: 26px; line-height: 1; cursor: pointer;
   }

@@ -363,6 +363,9 @@ const titleCase = (s) => String(s || "").charAt(0) + String(s || "").slice(1).to
 
 function renderLightbox() {
   const host = document.getElementById("nc-lb-host");
+  // Lock document scroll while open (mobile scrolls the document behind).
+  document.documentElement.classList.toggle("nc-noscroll", !!state.lb);
+  document.body.classList.toggle("nc-noscroll", !!state.lb);
   if (!state.lb) { host.innerHTML = ""; return; }
   const s = state.lb.list[state.lb.i];
   const pos = String(state.lb.i + 1).padStart(2, "0") + " / " + String(state.lb.list.length).padStart(2, "0");
@@ -556,12 +559,15 @@ function initHeaderScroll() {
   setH();
   window.addEventListener("resize", setH);
   let last = 0;
-  main.addEventListener("scroll", () => {
-    const y = main.scrollTop;
+  const onScroll = () => {
+    // Mobile scrolls the document; desktop scrolls the inner #nc-main pane.
+    const y = state.narrow ? (window.scrollY || document.documentElement.scrollTop || 0) : main.scrollTop;
     if (y > last && y > 64) app.classList.add("header-hidden");
     else if (y < last - 4) app.classList.remove("header-hidden");
-    last = y;
-  }, { passive: true });
+    last = y < 0 ? 0 : y;
+  };
+  window.addEventListener("scroll", onScroll, { passive: true });
+  main.addEventListener("scroll", onScroll, { passive: true });
 }
 
 // ── boot ───────────────────────────────────────────────
