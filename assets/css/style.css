@@ -43,6 +43,9 @@ html.nc-noscroll, body.nc-noscroll { overflow: hidden; }
 .nc-nav .current { color: var(--nc-cyan); border-bottom: 1px solid var(--nc-cyan); padding-bottom: 3px; }
 .nc-nav a { color: var(--nc-muted); }
 .nc-nav a:hover { color: var(--nc-text); }
+/* Not-yet-launched nav item: visible but non-interactive placeholder. */
+.nc-nav-soon { color: var(--nc-muted); opacity: 0.5; cursor: default; }
+.nc-nav-soon sup { margin-left: 4px; font-family: var(--nc-mono); font-size: 8px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--nc-cyan); opacity: 0.85; vertical-align: super; }
 
 /* SYSTEM STATUS readout (fixed width so nav buttons never shift as it changes) */
 .nc-status { display: flex; align-items: center; justify-content: flex-end; gap: 12px; width: 430px; font-size: 11px; letter-spacing: 0.1em; }

@@ -447,7 +447,7 @@ function renderShell() {
           <nav class="nc-nav">
             <span class="current">Archive</span>
             <a href="https://nczoning.net">Zoning Board</a>
-            <a href="https://academy.nczoning.net">Academy</a>
+            <span class="nc-nav-soon" title="Coming soon">Academy<sup>soon</sup></span>
           </nav>
           <div class="nc-status" id="nc-status">
             <span class="nc-status-label"></span>
