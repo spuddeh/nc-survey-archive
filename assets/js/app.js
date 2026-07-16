@@ -258,7 +258,7 @@ function renderRail() {
 function cardHtml(shot) {
   return `<div class="nc-card" data-act="open" data-id="${esc(shot.id)}">
     <div class="nc-shot">
-      <img src="${esc(shot.thumb)}" loading="lazy" decoding="async" alt="${esc(shot.subdistrict)}" />
+      <img src="${esc(shot.thumb)}" loading="lazy" decoding="async" alt="${esc(shot.subdistrict)}" onload="this.classList.add('loaded')" />
       <div class="nc-bracket tl"></div><div class="nc-bracket br"></div>
       ${shot.time ? `<div class="nc-time"><span class="dot"></span>${esc(shot.time)}</div>` : ""}
       <div class="nc-stage">${esc(shot.stage)}</div>
@@ -294,6 +294,12 @@ function renderGrid() {
          <span class="nc-count">${String(list.length).padStart(2, "0")} FRAMES</span>
        </div>
      </div>${body}`;
+  // Safety net: mark any image already complete (e.g. served from browser cache
+  // on refresh) as loaded, in case its onload fired before the handler bound.
+  const main = document.getElementById("nc-main");
+  main.querySelectorAll(".nc-shot img").forEach((im) => {
+    if (im.complete && im.naturalWidth > 0) im.classList.add("loaded");
+  });
 }
 
 // ── lightbox ───────────────────────────────────────────
