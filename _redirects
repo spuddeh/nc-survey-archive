@@ -1,0 +1,2 @@
+# SPA fallback — every path serves the single page so deep links / hash routes resolve.
+/*    /index.html   200

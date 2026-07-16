@@ -1,0 +1,19 @@
+# dependencies (dev-only tooling — the site itself has no build step)
+node_modules/
+
+# secrets — R2 API tokens / S3 creds for the manifest generator & uploads
+.env
+.env.*
+!.env.example
+
+# manifest generator scratch output
+manifest.next.json
+
+# design handover artifacts — kept locally, not part of the deployed site
+# (a public Pages repo serves everything committed at root)
+docs/
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+desktop.ini

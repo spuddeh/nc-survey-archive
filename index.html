@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en" class="theme-night-corp">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NC Survey Archive</title>
+  <meta name="description" content="Night Corp Urban Survey Division — visual reference registry of Night City night-lighting captures." />
+
+  <link rel="icon" type="image/svg+xml" href="assets/img/favicon-survey-gold.svg" />
+  <link rel="alternate icon" href="assets/img/favicon-survey.ico" />
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/img/favicon-16x16.png" />
+  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png" />
+  <link rel="manifest" href="assets/img/site.webmanifest" />
+  <meta name="theme-color" content="#0a192f" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;800&family=Rajdhani:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+
+  <!-- Global CSS stays static (linked, not bundled) so tokens/layout are
+       editable without a rebuild. theme.css = design tokens; style.css = layout. -->
+  <link rel="stylesheet" href="assets/css/theme.css" />
+  <link rel="stylesheet" href="assets/css/style.css" />
+
+  <!-- Deploy config: static, swappable without touching the app. -->
+  <script src="config.js"></script>
+</head>
+<body>
+  <div id="app"></div>
+
+  <!-- Gallery app: plain ES module, no build step. -->
+  <script type="module" src="assets/js/app.js"></script>
+</body>
+</html>

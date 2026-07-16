@@ -1,0 +1,52 @@
+/* NC Survey Archive — design tokens.
+   Ported from the NC Zoning Board / Academy Night Corp palette so all three
+   sites share one visual language. Edit here; nothing hardcodes these values. */
+:root {
+  /* Surfaces */
+  --nc-navy:        #0a192f;  /* primary background */
+  --nc-navy-grad:   #0c1e38;  /* header gradient top */
+  --nc-void:        #060d18;  /* deepest bg */
+  --nc-panel:       #0d1b30;  /* card surface */
+  --nc-panel-2:     #08111f;  /* image well */
+  --nc-scrim:       rgba(6,13,24,0.5);
+
+  /* Brand */
+  --nc-cyan:        #00f0ff;
+  --nc-cyan-soft:   #7df7ff;
+  --nc-amber:       #ffb300;
+
+  /* Text */
+  --nc-text:        #e6f1ff;
+  --nc-muted:       #8892b0;
+  --nc-muted-2:     #9fb3d1;
+  --nc-muted-3:     #556484;
+  --nc-muted-4:     #8fa3c4;
+
+  /* Status */
+  --nc-green:       #00ff9d;
+  --nc-green-led:   #80d900;
+  --nc-red:         #ff5050;
+
+  /* Lines */
+  --nc-line:        rgba(0,240,255,0.2);
+  --nc-line-soft:   rgba(0,240,255,0.15);
+  --nc-line-hair:   rgba(136,146,176,0.15);
+  --nc-line-btn:    rgba(136,146,176,0.28);
+
+  /* Type */
+  --nc-display: 'Night Corp Display','Orbitron',sans-serif;
+  --nc-head:    'Orbitron',sans-serif;
+  --nc-body:    'Rajdhani',sans-serif;
+  --nc-mono:    'Fira Code',monospace;
+
+  /* Layout */
+  --nc-rail-w: 270px;
+  --nc-narrow: 760px;
+}
+
+@font-face {
+  font-family: 'Night Corp Display';
+  src: url('../fonts/NightCorpDisplay-Regular.woff2') format('woff2'),
+       url('../fonts/NightCorpDisplay-Regular.otf') format('opentype');
+  font-weight: 400; font-style: normal; font-display: swap;
+}
