@@ -256,7 +256,7 @@ function renderRail() {
 function cardHtml(shot) {
   return `<div class="nc-card" data-act="open" data-id="${esc(shot.id)}">
     <div class="nc-shot">
-      <img src="${esc(shot.thumb)}" loading="lazy" alt="${esc(shot.subdistrict)}" />
+      <img src="${esc(shot.thumb)}" loading="lazy" decoding="async" alt="${esc(shot.subdistrict)}" />
       <div class="nc-bracket tl"></div><div class="nc-bracket br"></div>
       <div class="nc-time"><span class="dot"></span>22:30</div>
       <div class="nc-stage">${esc(shot.stage)}</div>
