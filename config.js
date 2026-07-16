@@ -17,7 +17,12 @@ window.SURVEY_CONFIG = {
   //     "project": "Skyline Bloom", "stage": "Calibration",
   //     "feed": "BASELINE", "date": "2026-07-12T22:30:00Z" }
   // "" → skip the fetch and use the inline SAMPLE list in app.js.
-  manifest: "manifest.json",
+  //
+  // PROD: "/api/manifest" — a Pages Function lists the R2 bucket live (dates +
+  // new uploads appear with no rebuild). It falls back to the static
+  // /manifest.json if the R2 binding isn't set. Local dev (no Functions) 404s
+  // this and the app shows the inline SAMPLE frames.
+  manifest: "/api/manifest",
 
   // Grid thumbnails (full-res is always used in the lightbox):
   //   "cf"     Cloudflare Image Resizing (/cdn-cgi/image) — needs the images

@@ -138,7 +138,9 @@ a:hover { color: var(--nc-cyan-soft); }
 .nc-lb-nav { flex-shrink: 0; width: 52px; height: 52px; background: rgba(10,25,47,0.7); border: 1px solid rgba(0,240,255,0.35); color: var(--nc-cyan); cursor: pointer; font-size: 22px; font-family: var(--nc-mono); transition: all 150ms ease; }
 .nc-lb-nav:hover { background: var(--nc-cyan); color: var(--nc-navy); }
 .nc-lb-fig { display: flex; flex-direction: column; flex: 1; min-width: 0; max-width: min(1760px, 94vw); max-height: 100%; min-height: 0; }
-.nc-lb-imgwrap { display: flex; flex: 1; min-height: 0; justify-content: center; cursor: zoom-in; }
+.nc-lb-imgwrap { position: relative; display: flex; flex: 1; min-height: 0; align-items: center; justify-content: center; cursor: zoom-in; }
+/* Swipe-hint arrows overlaid on the image (mobile only; desktop uses side nav). */
+.nc-lb-swipe { display: none; }
 .nc-lb-fig img { max-width: 100%; max-height: 82vh; object-fit: contain; display: block; border: 1px solid rgba(0,240,255,0.3); background: var(--nc-panel-2); }
 .nc-lb-meta { display: flex; justify-content: space-between; align-items: center; gap: 24px; padding: 16px 4px 2px; flex-wrap: wrap; flex-shrink: 0; }
 .nc-lb-meta-l { display: flex; flex-direction: column; gap: 8px; }
@@ -190,6 +192,18 @@ a:hover { color: var(--nc-cyan-soft); }
   .nc-lb-nav { display: none; }
   .nc-lb-fig { max-width: 100%; width: 100%; }
   .nc-lb-fig img { max-height: 66vh; width: 100%; }
+  /* Overlaid swipe-hint arrows on the image — also tappable. */
+  .nc-lb-swipe {
+    display: flex; align-items: center; justify-content: center;
+    position: absolute; top: 50%; transform: translateY(-50%); z-index: 3;
+    width: 44px; height: 44px; padding-bottom: 3px;
+    border: 1px solid rgba(0,240,255,0.4); border-radius: 50%;
+    background: rgba(6,13,24,0.5); color: var(--nc-cyan);
+    font-family: var(--nc-mono); font-size: 24px; line-height: 1; cursor: pointer;
+    -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
+  }
+  .nc-lb-swipe.prev { left: 10px; }
+  .nc-lb-swipe.next { right: 10px; }
   .nc-lb-meta { flex-direction: column; align-items: stretch; gap: 14px; padding-top: 14px; }
   .nc-lb-meta-r { justify-content: space-between; }
   .nc-lb-facts { gap: 8px 16px; font-size: 13px; }

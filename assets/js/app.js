@@ -342,7 +342,9 @@ function renderLightbox() {
         <button class="nc-lb-nav" data-act="prev" aria-label="Previous">\u2039</button>
         <div class="nc-lb-fig" data-act="stop">
           <div class="nc-lb-imgwrap" data-act="zoom" title="Click to zoom fullscreen">
+            <button class="nc-lb-swipe prev" data-act="prev" aria-label="Previous frame">‹</button>
             <img src="${esc(s.url)}" alt="${esc(s.subdistrict)}" />
+            <button class="nc-lb-swipe next" data-act="next" aria-label="Next frame">›</button>
           </div>
           <div class="nc-lb-meta">
             <div class="nc-lb-meta-l">

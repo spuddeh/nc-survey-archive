@@ -31,7 +31,10 @@ uploads/                sample frames — used only when config.r2Base is ""
 scripts/
   gen-manifest.mjs      list the R2 bucket → manifest.json (optional)
 _redirects              SPA fallback
-_routes.json            no Functions — everything is static
+_routes.json            routes /api/* to the manifest Pages Function
+functions/
+  api/manifest.js       lists the R2 bucket live → /api/manifest (dates + new frames)
+tags.json               optional per-frame tag overrides merged by the Function
 ```
 
 CSS, `config.js`, and `manifest.json` are **linked, not bundled**, on purpose:
@@ -43,7 +46,7 @@ retune tokens, swap the R2 base, or republish the frame list without touching
 | Key | Meaning |
 | --- | --- |
 | `r2Base` | Public base URL of the bucket, trailing slash. `""` = serve from `uploads/` (dev). Prod: `https://img.nczoning.net/` |
-| `manifest` | JSON served at `r2Base + manifest` listing frames. `""` = use the inline sample in `app.js` |
+| `manifest` | URL of the frame-list JSON. Prod: `/api/manifest` (Pages Function lists R2 live). `""` = inline sample in `app.js` |
 | `thumbnails` | `"cf"` Cloudflare Image Resizing · `"suffix"` pre-made `_thumb` files · `"off"` full-res in grid |
 | `thumbWidth` | Thumbnail width for `"cf"` mode |
 | `newWindowDays` | Frames dated within N days show a **NEW** tag |

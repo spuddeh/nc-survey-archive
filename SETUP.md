@@ -72,25 +72,42 @@ Save & Deploy. First deploy lands on `nc-survey-archive.pages.dev`.
 Optional: add a branded custom domain to the **Pages** project (Pages →
 Custom domains), e.g. `archive.nczoning.net`. Not required to go live.
 
-## 6. Fill upload dates in the manifest (optional polish)
-Until this runs, frames show `PENDING SYNC` and *Recent* sort falls back to
-name order. After the upload:
+## 6. Bind the R2 bucket to the Pages project (live manifest)
+The manifest is generated live by a Pages Function (`functions/api/manifest.js`)
+that lists the bucket — so **new uploads and their dates appear automatically**,
+no rebuild, no tokens. One binding to configure:
 
-```bash
-npm install                       # installs @aws-sdk/client-s3 (devDep)
-# set R2 creds (copy .env.example → .env and fill), then:
-R2_ACCOUNT_ID=… R2_ACCESS_KEY=… R2_SECRET_KEY=… R2_BUCKET=nc-survey \
-  node scripts/gen-manifest.mjs manifest.json > manifest.next.json
-mv manifest.next.json manifest.json
-git add manifest.json && git commit -m "Fill frame dates from R2" && git push
+Cloudflare dashboard → **Workers & Pages** → your Pages project → **Settings** →
+**Functions** (or *Bindings*) → **R2 bucket bindings** → *Add binding*:
+- **Variable name:** `SURVEY_BUCKET`
+- **R2 bucket:** `nc-survey`
+
+Redeploy (Deployments → Retry, or push any commit). The site fetches
+`/api/manifest`; the Function returns the live listing, edge-cached ~60s. Until
+the binding exists it safely falls back to the committed `manifest.json`.
+
+Frame dates then come straight from R2 (`o.uploaded`) — `PENDING SYNC`
+disappears and *Recent* sort works, with zero manual steps on future uploads.
+
+### Per-frame tags (optional)
+Defaults come from `config.js` (surveyor `Spuddeh`, feed `BASELINE`, project /
+stage fallbacks). To override specific frames, add entries to `tags.json`
+(keyed by filename) and push:
+```json
+{ "kabuki_roof__t0002_00004.webp": { "project": "Skyline Bloom", "feed": "AUGMENTED", "surveyor": "Spuddeh" } }
 ```
-Pages redeploys automatically on push.
+The Function merges these onto the live listing.
+
+> The `scripts/gen-manifest.mjs` generator still exists for regenerating the
+> static `manifest.json` fallback by hand, but it is no longer part of the
+> normal flow.
 
 ---
 
 ## Verify (live)
-1. Open the Pages URL → grid loads all 1902 frames.
+1. Open the Pages URL → grid loads all 1902 frames; `/api/manifest` returns 200.
 2. A grid image request is `img.nczoning.net/cdn-cgi/image/width=640,…/‹file›`
    → 200 (resized). Lightbox loads the full-res original.
 3. Click a District → its subdistricts reveal; counts update.
 4. Open a frame → URL gets `#NC-…`; reload that URL → same frame opens.
+5. After the binding is set, frames show real dates (not `PENDING SYNC`).
