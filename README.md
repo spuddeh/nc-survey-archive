@@ -12,16 +12,16 @@ the archive's identity, so the copy stays evergreen as the set grows.
 Free, static, hosted on Cloudflare Pages. Images live in Cloudflare R2; the
 gallery reads a JSON manifest.
 
-> **No build step.** Plain HTML + CSS + one ES module. Clone and open — there is
+> **No build step.** Plain HTML + CSS + one ES module. Clone and open, there is
 > nothing to compile, no `node_modules`, no framework to untangle. The manifest
 > generator is the only script and it is optional.
 
 ## Repo layout
 
 ```text
-index.html              entry — links the static CSS + config, loads the app module
+index.html              entry: links the static CSS + config, loads the app module
 config.js               window.SURVEY_CONFIG (R2 base, manifest, thumbnails…)
-manifest.json           frame list + per-frame tags — the single metadata source
+manifest.json           frame list + per-frame tags, the single metadata source
 assets/
   css/
     theme.css           design tokens (the shared Night Corp palette + type)
@@ -31,7 +31,7 @@ assets/
     app.js              the gallery: state, filtering, lightbox, deep-links
   fonts/                Night Corp Display (SIL OFL 1.1)
   img/                  logo + favicons (survey gold / cyan)
-uploads/                sample frames — used only when config.r2Base is ""
+uploads/                sample frames, used only when config.r2Base is ""
 scripts/
   gen-manifest.mjs      list the R2 bucket → manifest.json (optional)
   delete-frames.mjs     remove frames: R2 object + thumb + manifest entry
@@ -80,10 +80,10 @@ An array of entries. Each is a filename string, or an object to attach tags:
 - **Filename convention** `‹subdistrict›_‹vantage›__t‹tour›_‹frame›.webp` drives
   the district hierarchy, vantage, and frame ID automatically. Add new
   subdistricts/vantages to `DISTRICTS` / `AREAS` in `app.js`.
-- **`feed`** — `BASELINE` (unmodified game) or `AUGMENTED` (captured with mods).
-- **`date`** — the R2 object's `LastModified` (upload time). Drives the *Recent*
+- **`feed`**: `BASELINE` (unmodified game) or `AUGMENTED` (captured with mods).
+- **`date`**: the R2 object's `LastModified` (upload time). Drives the *Recent*
   sort and the **NEW** tag. Absent → shows `PENDING SYNC`.
-- **`project` / `stage`** — optional grouping; fall back to the config defaults.
+- **`project` / `stage`**: optional grouping; fall back to the config defaults.
 
 ### Regenerating from the bucket
 
@@ -104,12 +104,12 @@ Use an R2 API token with Object Read. `date` is filled from each object's
 
 The source captures live outside this repo (they are the R2 payload, not site
 code). They are organised on disk as `‹District›/‹Subdistrict›/*.webp`, with a
-`duplicates/` folder in each holding frames removed by the dedupe pass — only the
+`duplicates/` folder in each holding frames removed by the dedupe pass; only the
 **keepers** (files *not* under `duplicates/`) are published.
 
 **R2 is a flat bucket:** every keeper is uploaded to the bucket root by
 basename. Filenames already encode the subdistrict and vantage, so they are
-self-describing and collision-free once flattened — no folders needed in R2.
+self-describing and collision-free once flattened, no folders needed in R2.
 
 `app.js` `DISTRICTS` maps each subdistrict key to its `{ district, subdistrict,
 code }`; the `code` (unique, 3 letters) becomes the `NC-‹code›-‹V›‹frame›` id (V
@@ -123,33 +123,33 @@ To add captures later:
    `little_china_street__t…`). New subdistrict → add a row to `DISTRICTS` in
    `app.js` with a fresh unique `code`. New vantage → add to `AREAS`.
 2. Flatten the keepers to one folder and upload to the R2 bucket root.
-3. Regenerate the manifest from the bucket (see above) and `git push` — Pages
+3. Regenerate the manifest from the bucket (see above) and `git push`; Pages
    redeploys the new `manifest.json` and the frames appear.
 
 ## Features
 
-- **Hierarchical filters** — click a District to reveal its Subdistricts; click
+- **Hierarchical filters**: click a District to reveal its Subdistricts; click
   a Project to reveal its Stages. Plus Vantage, FOV, Feed. Counts update live and
   impossible combinations disable. Each group label has a hover tooltip.
 - **Sort** Recent (by upload date) or Name.
-- **Lightbox reader** — full-res image + full metadata, keyboard `←/→/Esc`,
+- **Lightbox reader**: full-res image + full metadata, keyboard `←/→/Esc`,
   download button.
-- **Deep-links** — an open frame writes its ID to the URL hash
+- **Deep-links**: an open frame writes its ID to the URL hash
   (`#NC-KBK-00321`); loading that URL opens the frame.
 - **NEW tag** on frames uploaded within `newWindowDays`.
-- **Responsive** — the filter rail collapses to a drawer under 760px.
+- **Responsive**: the filter rail collapses to a drawer under 760px.
 - **Live SYSTEM STATUS** telemetry in the header (ports the Zoning Board readout).
 
 ## Hosting
 
 Cloudflare Pages, free tier, Git integration.
 
-- **Build command** — none (leave empty).
-- **Output directory** — `/` (repo root).
+- **Build command**: none (leave empty).
+- **Output directory**: `/` (repo root).
 - The site is served at `survey.nczoning.net` (Pages custom domain). Put the
   images in an R2 bucket exposed at `img.nczoning.net` (custom domain on the
   bucket, or an R2 binding). Set `config.js` `r2Base` to match.
-- For `thumbnails: "cf"`, enable **Image Resizing** on the zone — the grid then
+- For `thumbnails: "cf"`, enable **Image Resizing** on the zone: the grid then
   requests `‹r2Base›/cdn-cgi/image/width=640,…/‹file›`. No pre-processing.
 - Download links are plain `GET`s on the original object; R2 egress to the public
   internet is free, so they don't count against limits.

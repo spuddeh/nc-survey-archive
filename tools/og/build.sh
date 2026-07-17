@@ -2,8 +2,8 @@
 # Regenerate the Open Graph card at assets/img/og-image.jpg from og.html.
 #
 # The card is rendered headless (not composited with ffmpeg) so it uses the real
-# site fonts — Night Corp Display (local woff2), Fira Code + Rajdhani (Google
-# Fonts) — matching the website exactly. ffmpeg's text renderer segfaults on
+# site fonts: Night Corp Display (local woff2), Fira Code + Rajdhani (Google
+# Fonts), matching the website exactly. ffmpeg's text renderer segfaults on
 # Fira Code, which is why this goes through a browser.
 #
 # Usage:   bash tools/og/build.sh [background-image]

@@ -1,10 +1,10 @@
-# dependencies (dev-only tooling — the site itself has no build step)
+# dependencies (dev-only tooling; the site itself has no build step)
 node_modules/
 
 # wrangler local dev cache/state (from `wrangler pages dev`)
 .wrangler/
 
-# secrets — R2 API tokens / S3 creds for the manifest generator & uploads
+# secrets: R2 API tokens / S3 creds for the manifest generator & uploads
 .env
 .env.*
 !.env.example
@@ -12,14 +12,14 @@ node_modules/
 # manifest generator scratch output
 manifest.next.json
 
-# design handover artifacts — kept locally, not part of the deployed site
+# design handover artifacts, kept locally, not part of the deployed site
 # (a public Pages repo serves everything committed at root)
 docs/
 
 # Claude Code local setup (memory/config; never committed)
 CLAUDE.md
 .claude/
-# Guard against a stray local wiki copy — the wiki lives only in the D:\Wiki vault
+# Guard against a stray local wiki copy; the wiki lives only in the D:\Wiki vault
 wiki/
 raw/
 
@@ -28,5 +28,5 @@ raw/
 Thumbs.db
 desktop.ini
 
-# design-phase test images — local-dev fallback only, never deployed
+# design-phase test images, local-dev fallback only, never deployed
 uploads/

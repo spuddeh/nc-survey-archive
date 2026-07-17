@@ -1,4 +1,4 @@
-/* NC Survey Archive — layout & components.
+/* NC Survey Archive: layout & components.
    All visual rules live here (the app.js output carries classes, not inline
    styles) so the design is editable without touching logic. */
 
@@ -111,7 +111,7 @@ html.nc-noscroll, body.nc-noscroll { overflow: hidden; }
 /* Image well shows a subtle placeholder glyph (a background, so it sits behind
    the <img> and the corner brackets) until the thumbnail fades in on load.
    The <img> stays transparent until then, so the browser's broken/loading icon
-   never shows — and a failed load simply leaves the placeholder. */
+   never shows, and a failed load simply leaves the placeholder. */
 .nc-shot {
   position: relative; aspect-ratio: 16/9; overflow: hidden;
   background-color: var(--nc-panel-2);
@@ -215,7 +215,7 @@ html.nc-noscroll, body.nc-noscroll { overflow: hidden; }
   .nc-lb-nav { display: none; }
   .nc-lb-fig { max-width: 100%; width: 100%; }
   .nc-lb-fig img { max-height: 66vh; width: 100%; }
-  /* Overlaid swipe-hint arrows — thin, borderless, edge-flush scrims that
+  /* Overlaid swipe-hint arrows: thin, borderless, edge-flush scrims that
      stay out of the way of the image. Also tappable. */
   .nc-lb-swipe {
     display: flex; align-items: center; justify-content: center;

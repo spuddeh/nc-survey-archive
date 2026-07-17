@@ -1,14 +1,14 @@
-// GET /api/manifest — the gallery's frame list, generated live from the R2
+// GET /api/manifest: the gallery's frame list, generated live from the R2
 // bucket. No build step, no committed manifest, no API tokens: the bucket is an
 // R2 *binding* on the Pages project (Settings → Functions → R2 bindings), bound
 // here as `SURVEY_BUCKET`.
 //
 // For each object it emits { file, date, ...tags } where `date` is the R2
-// upload time (o.uploaded) — so new uploads and their dates appear on the next
+// upload time (o.uploaded), so new uploads and their dates appear on the next
 // load.
 // Per-frame metadata (project / stage / surveyor / time / weather / fov / feed)
-// lives in the committed static /manifest.json — the single per-frame metadata
-// source — and is merged onto the live listing. There are deliberately NO
+// lives in the committed static /manifest.json (the single per-frame metadata
+// source) and is merged onto the live listing. There are deliberately NO
 // default values: a frame with no entry renders as UNLOGGED in the app rather
 // than being silently mis-filed. The response is edge-cached briefly so the
 // bucket is listed at most once per minute per location.
@@ -40,7 +40,7 @@ export async function onRequest(context) {
     if (t.ok) for (const e of await t.json()) {
       if (e && typeof e === "object" && e.file) tags[e.file] = e;
     }
-  } catch { /* no static manifest — frames appear untagged (UNLOGGED) */ }
+  } catch { /* no static manifest, frames appear untagged (UNLOGGED) */ }
 
   const out = [];
   let cursor;

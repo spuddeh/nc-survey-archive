@@ -1,4 +1,4 @@
-// NC Survey Archive — gallery app (vanilla ES module, no build step).
+// NC Survey Archive: gallery app (vanilla ES module, no build step).
 //
 // State + rendering are plain DOM; clicks are handled by delegation on
 // document.body, so re-renders never leave dangling listeners. Config comes from
@@ -57,8 +57,8 @@ function deriveShots(files) {
       district: d.district, subdistrict: d.subdistrict,
       areaKey, areaLabel: a.label, areaShort: a.short,
       id: "NC-" + d.code + "-" + vSuf + frame,
-      // Capture metadata is per-frame data from the manifest \u2014 nothing assumed.
-      // Absent \u2192 "" here, shown as the UNKNOWN fallback at render time.
+      // Capture metadata is per-frame data from the manifest; nothing assumed.
+      // Absent becomes "" here, shown as the UNKNOWN fallback at render time.
       time: e.time || "", weather: e.weather || "", fov: e.fov || "",
       project: e.project || "",
       stage: e.stage || "",
@@ -352,7 +352,7 @@ function renderStatus() {
   wrap.querySelector(".nc-status-label").textContent = "[SYSTEM_STATUS: " + state.status + "]";
   wrap.querySelector(".nc-status-ping").textContent = state.telemetry;
 }
-// SYNC_OFFSET telemetry — matches the nc-zoning-board generator (values in
+// SYNC_OFFSET telemetry, matches the nc-zoning-board generator (values in
 // TELEMETRY, constants.js).
 function telemetryTick() {
   const roll = Math.random();
@@ -406,7 +406,7 @@ function setDrawer(open) {
     (open && state.narrow) ? '<div class="nc-backdrop" data-act="drawer"></div>' : "";
 }
 
-// single delegated click handler — survives every re-render
+// single delegated click handler that survives every re-render
 document.body.addEventListener("click", (ev) => {
   const t = ev.target.closest("[data-act]");
   if (!t) return;
@@ -463,10 +463,10 @@ function openFromHash() {
 }
 
 async function loadManifest() {
-  if (!CFG.manifest) return;   // no manifest configured — SAMPLE grid stands
+  if (!CFG.manifest) return;   // no manifest configured, SAMPLE grid stands
   try {
     // Manifest is served same-origin by Pages (committed to the repo), NOT from
-    // r2Base — keeps this a plain same-origin fetch and avoids needing an R2
+    // r2Base keeps this a plain same-origin fetch and avoids needing an R2
     // CORS policy. Images/downloads still come from r2Base via <img>/<a>.
     const res = await fetch(CFG.manifest, { cache: "no-cache" });
     if (!res.ok) return manifestFailed("http " + res.status);
@@ -484,12 +484,12 @@ async function loadManifest() {
 // The manifest fetch failed (HTTP error, empty/bad shape, or network). The grid
 // is currently sitting in the "syncing" empty state; this decides what it shows
 // instead. Two audiences hit this path: local dev with no Pages Functions
-// (/api/manifest 404s — SAMPLE was the intended experience there), and the live
+// (/api/manifest 404s, so SAMPLE was the intended experience there), and the live
 // site when R2/Functions have an outage (test frames must NOT appear there).
 function manifestFailed(reason) {
   // Local dev (r2Base "" per the documented config) falls back to the inline
-  // SAMPLE frames, matching the old no-Functions experience. Anywhere else —
-  // i.e. the live site — show the error state; test frames never reach prod.
+  // SAMPLE frames, matching the old no-Functions experience. Anywhere else
+  // (i.e. the live site) shows the error state; test frames never reach prod.
   if (!CFG.r2Base) {
     state.sync = "ready";
     state.files = SAMPLE;
@@ -502,8 +502,8 @@ function manifestFailed(reason) {
 }
 
 // Mobile: hide the header when scrolling the grid down, reveal on scroll up.
-// The app is a fixed 100svh shell — content scrolls inside #nc-main, not the
-// window — so we hook that element. The collapse itself is CSS, mobile-only.
+// The app is a fixed 100svh shell; content scrolls inside #nc-main, not the
+// window, so we hook that element. The collapse itself is CSS, mobile-only.
 function initHeaderScroll() {
   const main = document.getElementById("nc-main");
   const app = document.getElementById("nc-approot");

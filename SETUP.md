@@ -1,4 +1,4 @@
-# Go-live runbook — NC Survey Archive
+# Go-live runbook: NC Survey Archive
 
 The site code is done, committed, and pushed to
 `github.com/spuddeh/nc-survey-archive`. What's left are Cloudflare account
@@ -9,7 +9,7 @@ Fixed facts for this project:
 - **Images host (R2 custom domain):** `img.nczoning.net`
 - **Zone:** `nczoning.net`
 - **Bucket name used below:** `nc-survey`
-- **Image library (keepers, flattened for upload):** `E:\Cyberpunk Cityscapes\_r2-upload` — **1902** `.webp`, 374 MB
+- **Image library (keepers, flattened for upload):** `E:\Cyberpunk Cityscapes\_r2-upload`, **1902** `.webp`, 374 MB
 - **Manifest:** `manifest.json` (1902 entries) is committed and served by Pages.
 
 ---
@@ -22,7 +22,7 @@ R2 → bucket `nc-survey` → **Settings** → *Public access* → **Custom Doma
 *Connect Domain* → `img.nczoning.net`. Cloudflare adds the DNS record on the
 `nczoning.net` zone automatically. Wait until it shows **Active**.
 
-> This is required for on-the-fly thumbnails — they are fetched through the
+> This is required for on-the-fly thumbnails; they are fetched through the
 > zone at `img.nczoning.net/cdn-cgi/image/...`.
 
 ## 3. Enable Image Transformations on the zone
@@ -31,10 +31,10 @@ Dashboard → select `nczoning.net` → **Images** → *Transformations* → ena
 transformations/month, cached after first hit.
 
 ## 4. Upload the images (flat, to the bucket root)
-The `_r2-upload` folder is already flattened — every file goes to the bucket
+The `_r2-upload` folder is already flattened; every file goes to the bucket
 root by basename. Pick one method:
 
-**Option A — rclone (recommended for 1902 files).** Create an R2 **API token**
+**Option A: rclone (recommended for 1902 files).** Create an R2 **API token**
 (R2 → *Manage API Tokens* → Object Read & Write) and note the Account ID, Access
 Key ID, Secret. Then:
 
@@ -45,7 +45,7 @@ rclone config create r2 s3 provider=Cloudflare \
 rclone copy "E:/Cyberpunk Cityscapes/_r2-upload" r2:nc-survey --transfers=32 --progress
 ```
 
-**Option B — wrangler.**
+**Option B: wrangler.**
 ```bash
 npm i -g wrangler          # or: npx wrangler ...
 wrangler login
@@ -55,7 +55,7 @@ Get-ChildItem *.webp | ForEach-Object {
 }
 ```
 
-**Option C — dashboard drag-drop.** R2 → bucket → *Upload* → drag the *contents*
+**Option C: dashboard drag-drop.** R2 → bucket → *Upload* → drag the *contents*
 of `_r2-upload` (the files, not the folder). Fine but slow for 1902 files.
 
 Verify one object resolves publicly (after step 2 is Active):
@@ -74,7 +74,7 @@ Custom domains), e.g. `archive.nczoning.net`. Not required to go live.
 
 ## 6. Bind the R2 bucket to the Pages project (live manifest)
 The manifest is generated live by a Pages Function (`functions/api/manifest.js`)
-that lists the bucket — so **new uploads and their dates appear automatically**,
+that lists the bucket, so **new uploads and their dates appear automatically**,
 no rebuild, no tokens. One binding to configure:
 
 Cloudflare dashboard → **Workers & Pages** → your Pages project → **Settings** →
@@ -86,13 +86,13 @@ Redeploy (Deployments → Retry, or push any commit). The site fetches
 `/api/manifest`; the Function returns the live listing, edge-cached ~60s. Until
 the binding exists it safely falls back to the committed `manifest.json`.
 
-Frame dates then come straight from R2 (`o.uploaded`) — `PENDING SYNC`
+Frame dates then come straight from R2 (`o.uploaded`), `PENDING SYNC`
 disappears and *Recent* sort works, with zero manual steps on future uploads.
 
 ### Per-frame tags
 
 All per-frame metadata (project / stage / surveyor / time / weather / fov /
-feed) lives in the committed `manifest.json` — one entry per frame, no separate
+feed) lives in the committed `manifest.json`, one entry per frame, no separate
 tags file and no defaults. Edit the frame's entry and push:
 
 ```json
@@ -100,7 +100,7 @@ tags file and no defaults. Edit the frame's entry and push:
 ```
 
 The Function merges these onto the live R2 listing. A frame with no entry (or a
-missing field) renders as `UNLOGGED` in the app — visible, filterable, and easy
+missing field) renders as `UNLOGGED` in the app: visible, filterable, and easy
 to backfill later.
 
 > When regenerating with `scripts/gen-manifest.mjs`, always pass the existing
@@ -110,8 +110,8 @@ to backfill later.
 ### Deleting frames
 
 The site lists the bucket live, so a frame is gone only once its R2 object is.
-`scripts/delete-frames.mjs` handles the whole removal — R2 object, `_thumb`
-derivative, and the `manifest.json` entry — and is a dry run unless `--apply`
+`scripts/delete-frames.mjs` handles the whole removal (R2 object, `_thumb`
+derivative, and the `manifest.json` entry) and is a dry run unless `--apply`
 is passed (needs Object Read & Write on the R2 token):
 
 ```bash
@@ -120,14 +120,14 @@ node scripts/delete-frames.mjs --apply kabuki_street__t0001_00002.webp  # delete
 ```
 
 Inputs can be bare filenames **or pasted image URLs** (right-click the frame →
-copy image address) — both the full-res and the `cdn-cgi` thumbnail forms
+copy image address): both the full-res and the `cdn-cgi` thumbnail forms
 normalise to the object key, which removes filename-typo risk entirely.
 
 Commit and push the pruned `manifest.json` afterwards. The live site updates
 when the `/api/manifest` edge cache expires (~60s).
 
 **Edge cache caveat:** deleting the R2 object does not delete Cloudflare's
-cached copies — the Cache Rule serves images with a month-long TTL, so a
+cached copies; the Cache Rule serves images with a month-long TTL, so a
 deleted frame's direct URL keeps resolving until purged. With `CF_ZONE_ID` +
 `CF_CACHE_PURGE_TOKEN` set (zone token with Cache Purge permission; also works as repo
 secrets for the workflow), the script purges the URLs automatically; without
@@ -136,7 +136,7 @@ URL). Purging an original image also purges its `cdn-cgi` resized variants.
 
 No local setup? The **Delete frames** workflow (Actions tab) runs the same
 script from the browser: dispatch once with *apply* unticked to preview, again
-ticked to delete — it commits the pruned `manifest.json` itself. Only the
+ticked to delete; it commits the pruned `manifest.json` itself. Only the
 repository owner can run it. One-time setup under *Settings → Secrets and
 variables → Actions*: `R2_ACCOUNT_ID`, `R2_ACCESS_KEY`, `R2_SECRET_KEY` as
 **secrets** (token needs Object Read & Write) and `R2_BUCKET` as a

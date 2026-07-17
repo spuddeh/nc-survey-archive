@@ -1,4 +1,4 @@
-// NC Survey Archive — hosting runtime config.
+// NC Survey Archive: hosting runtime config.
 //
 // Static and linked (not bundled), so you can retune the deploy without
 // rebuilding anything. The app reads window.SURVEY_CONFIG on load; nothing
@@ -18,14 +18,14 @@ window.SURVEY_CONFIG = {
   //     "feed": "BASELINE", "date": "2026-07-12T22:30:00Z" }
   // "" → skip the fetch and use the inline SAMPLE list in app.js.
   //
-  // PROD: "/api/manifest" — a Pages Function lists the R2 bucket live (dates +
+  // PROD: "/api/manifest", a Pages Function lists the R2 bucket live (dates +
   // new uploads appear with no rebuild). It falls back to the static
   // /manifest.json if the R2 binding isn't set. Local dev (no Functions) 404s
   // this and the app shows the inline SAMPLE frames.
   manifest: "/api/manifest",
 
   // Grid thumbnails (full-res is always used in the lightbox):
-  //   "cf"     Cloudflare Image Resizing (/cdn-cgi/image) — needs the images
+  //   "cf"     Cloudflare Image Resizing (/cdn-cgi/image), needs the images
   //            on a CF zone; no pre-processing. Enable Image Resizing on the zone.
   //   "suffix" pre-generated <name>_thumb.webp beside each original.
   //   "off"    serve full-res in the grid too.
@@ -37,6 +37,6 @@ window.SURVEY_CONFIG = {
   newWindowDays: 3
 
   // There are deliberately NO default project / stage / surveyor values.
-  // Missing metadata stays missing and renders as the UNLOGGED fallback —
+  // Missing metadata stays missing and renders as the UNLOGGED fallback;
   // baked-in defaults would hide gaps and mis-file frames in the filters.
 };

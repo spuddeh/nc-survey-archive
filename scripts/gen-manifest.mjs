@@ -1,10 +1,10 @@
-// gen-manifest.mjs — list the R2 bucket and emit manifest.json for the archive.
+// gen-manifest.mjs: list the R2 bucket and emit manifest.json for the archive.
 //
 //   node scripts/gen-manifest.mjs > manifest.json
 //
 // Reads S3-compatible creds from the environment (an R2 API token with
 // Object Read). `date` is taken from each object's LastModified, which is the
-// upload time — the consistent, free source the gallery sorts "Recent" by.
+// upload time, the consistent, free source the gallery sorts "Recent" by.
 //
 // Deps (install once):  npm i @aws-sdk/client-s3
 // Env:
@@ -16,7 +16,7 @@
 // Per-frame tags (project / stage / surveyor / time / weather / fov / feed)
 // are NOT derivable from the bucket, so this preserves any you have already
 // set: pass the existing manifest.json as the first arg and its per-file tags
-// are merged onto the fresh listing. ALWAYS pass it — regenerating without it
+// are merged onto the fresh listing. ALWAYS pass it; regenerating without it
 // strips every tag.
 //
 //   node scripts/gen-manifest.mjs manifest.json > manifest.next.json
@@ -24,7 +24,7 @@
 import { S3Client, ListObjectsV2Command } from "@aws-sdk/client-s3";
 import { readFileSync, existsSync } from "node:fs";
 
-// Minimal .env loader (no dependency) — so `npm run gen:manifest` works after
+// Minimal .env loader (no dependency), so `npm run gen:manifest` works after
 // copying .env.example → .env, without exporting vars into the shell.
 if (existsSync(".env")) {
   for (const line of readFileSync(".env", "utf8").split(/\r?\n/)) {

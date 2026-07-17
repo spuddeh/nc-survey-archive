@@ -1,17 +1,17 @@
-# Delete frames from the archive — manual dispatch only.
+# Delete frames from the archive. Manual dispatch only.
 #
 # Thin runner around scripts/delete-frames.mjs (the single implementation):
 # removes each frame's R2 object + _thumb derivative and prunes its
 # manifest.json entry, committing the pruned manifest back to the branch.
-# Dry run unless "apply" is ticked — run once to preview, again to delete.
+# Dry run unless "apply" is ticked: run once to preview, again to delete.
 #
 # Scoped to the repository owner: the job refuses any other actor. (Note this
-# guard lives in the workflow file itself — anyone granted write access could
+# guard lives in the workflow file itself; anyone granted write access could
 # edit it away. If collaborators are ever added, move the R2_* secrets into a
 # GitHub Environment with a required reviewer for a guard they can't bypass.)
 #
 # Needs repo secrets R2_ACCOUNT_ID, R2_ACCESS_KEY, R2_SECRET_KEY (an R2 API
-# token with Object Read & Write) and repo variable R2_BUCKET (plain config —
+# token with Object Read & Write) and repo variable R2_BUCKET (plain config;
 # the name is already public in .env.example, so it isn't a secret).
 # Optional secrets CF_ZONE_ID + CF_CACHE_PURGE_TOKEN (Cache Purge permission) let the
 # script also purge deleted frames' public URLs from the edge cache; without
@@ -32,7 +32,7 @@ on:
         type: boolean
         default: false
 
-# One deletion at a time — parallel runs would race on the manifest commit.
+# One deletion at a time: parallel runs would race on the manifest commit.
 concurrency: delete-frames
 
 permissions:

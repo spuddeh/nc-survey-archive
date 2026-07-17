@@ -1,8 +1,8 @@
-// NC Survey Archive — shared constants (ES module).
+// NC Survey Archive: shared constants (ES module).
 //
 // Everything tunable or data-shaped lives here; app.js holds only behaviour.
 // Runtime *deploy* config (R2 base, manifest URL, thumbnails) stays in
-// /config.js so the deploy can be retuned without touching the app — this file
+// /config.js so the deploy can be retuned without touching the app; this file
 // is for values that are part of the app itself.
 
 // Fallbacks applied when /config.js sets no value (local-dev friendly: serve
@@ -16,7 +16,7 @@ export const CONFIG_DEFAULTS = {
 };
 
 // Lore-appropriate fallback when a frame genuinely has no value for a field.
-// Applied at RENDER time only — missing metadata is stored as "" so filters
+// Applied at RENDER time only; missing metadata is stored as "" so filters
 // and future cleanup can tell real values from absent ones.
 export const UNKNOWN = "UNLOGGED";
 
@@ -28,7 +28,7 @@ export const THUMB_QUALITY = 82;
 
 // ── layout / interaction tuning ────────────────────────
 // Below this viewport width the rail becomes a drawer and the header collapses.
-// Mirrors --nc-narrow in theme.css and the 760px media query in style.css —
+// Mirrors --nc-narrow in theme.css and the 760px media query in style.css.
 // CSS can't read JS (or vice versa) without a build step, so change all three.
 export const NARROW_BREAKPOINT_PX = 760;
 
@@ -48,7 +48,7 @@ export const DAY_MS = 864e5;
 export const DATE_LOCALE = "en-GB";
 export const DATE_FMT = { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" };
 
-// Header SYNC_OFFSET telemetry — distribution and thresholds port the
+// Header SYNC_OFFSET telemetry: distribution and thresholds port the
 // nc-zoning-board generator verbatim: 85% nominal (0–200ms), 10% elevated
 // (200–800ms), 5% critical (800–1800ms).
 export const TELEMETRY_TICK_MS = 2000;
@@ -123,13 +123,13 @@ export const SAMPLE = [
   "kabuki_street__t0160_00321.webp"
 ];
 
-// flat facet keys — each is an independent filter constraint
+// flat facet keys, each an independent filter constraint
 export const FACETS = [
   { key: "district" }, { key: "subdistrict" }, { key: "areaKey" },
   { key: "project" }, { key: "stage" }, { key: "fov" }, { key: "feed" }
 ];
 
-// how the rail groups them — hierarchical groups reveal children under the
+// how the rail groups them: hierarchical groups reveal children under the
 // selected parent (District ▸ Subdistrict, Project ▸ Stage)
 export const GROUPS = [
   { label: "Location", parent: "district", child: "subdistrict", childLabel: "Subdistricts", tip: "Night City district ▸ subdistrict where the frame was captured." },

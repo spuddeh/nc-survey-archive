@@ -1,10 +1,10 @@
-// delete-frames.mjs — remove frames from the archive: R2 object, its _thumb
+// delete-frames.mjs, removing frames from the archive: R2 object, its _thumb
 // derivative (if any), and the manifest.json entry, in one step.
 //
 //   node scripts/delete-frames.mjs <file-or-url...>            dry run (default)
 //   node scripts/delete-frames.mjs --apply <file-or-url...>    actually delete
 //
-// Accepts bare filenames OR pasted image URLs — the full-res form
+// Accepts bare filenames OR pasted image URLs; the full-res form
 // (https://img.nczoning.net/<file>) and the thumbnail form
 // (…/cdn-cgi/image/<options>/<file>) both normalise to the object key, so you
 // can copy the address straight from the browser and know it's the right frame.
@@ -12,18 +12,18 @@
 // The site lists the R2 bucket live via /api/manifest, so the bucket delete is
 // what removes a frame from the gallery (visible within the Function's ~60s
 // edge cache). The manifest.json prune keeps the static fallback and the
-// metadata registry in sync — commit and push it afterwards.
+// metadata registry in sync; commit and push it afterwards.
 //
 // Uses the same .env credentials as gen-manifest.mjs; the R2 API token needs
 // Object Read & Write. Optionally CF_ZONE_ID + CF_CACHE_PURGE_TOKEN (Cache Purge
 // permission) to also purge the deleted frames' public URLs from the edge
-// cache — otherwise they keep resolving for up to the Cache Rule TTL and the
+// cache; otherwise they keep resolving for up to the Cache Rule TTL and the
 // script prints them for a manual purge.
 
 import { S3Client, HeadObjectCommand, DeleteObjectsCommand, ListObjectsV2Command } from "@aws-sdk/client-s3";
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 
-// Minimal .env loader (no dependency) — same as gen-manifest.mjs.
+// Minimal .env loader (no dependency), same as gen-manifest.mjs.
 if (existsSync(".env")) {
   for (const line of readFileSync(".env", "utf8").split(/\r?\n/)) {
     const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$/);
@@ -34,7 +34,7 @@ if (existsSync(".env")) {
 // Normalise one input token to a bucket key. Accepts a bare filename or a
 // pasted image URL (full-res or /cdn-cgi/image/<options>/ thumbnail form).
 // Tokens are whitespace-separated; stray trailing commas from pasted lists are
-// stripped. Do NOT split on commas — cdn-cgi option segments contain them.
+// stripped. Do NOT split on commas: cdn-cgi option segments contain them.
 const normalize = (raw) => {
   let s = raw.trim().replace(/^["']+|["',]+$/g, "");
   if (/^https?:\/\//i.test(s)) {
@@ -67,12 +67,12 @@ const s3 = new S3Client({
 
 // Preflight: prove we can reach the bucket at all. Without this, a bad token
 // or wrong bucket name makes every HEAD fail and every frame reads as
-// "NOT IN BUCKET" — a credentials problem masquerading as missing files.
+// "NOT IN BUCKET", a credentials problem masquerading as missing files.
 try {
   const probe = await s3.send(new ListObjectsV2Command({ Bucket: R2_BUCKET, MaxKeys: 1 }));
   const sample = probe.Contents?.[0]?.Key ?? "(bucket is empty)";
   // Print what we can actually see: if the sample key looks like it belongs to
-  // a different project, the token/bucket is wrong — the frames aren't missing.
+  // a different project, the token/bucket is wrong; the frames aren't missing.
   console.log(`Bucket "${R2_BUCKET}": reachable — sample key: ${sample}\n`);
 } catch (e) {
   console.error(`Cannot access bucket "${R2_BUCKET}": ${e.name} (HTTP ${e.$metadata?.httpStatusCode ?? "?"}).`);
@@ -85,7 +85,7 @@ const exists = async (Key) => {
   catch (e) {
     const code = e.$metadata?.httpStatusCode;
     if (code === 404 || e.name === "NotFound") return false;   // genuinely absent
-    // Anything else (403, network, throttling) is NOT "file missing" — abort
+    // Anything else (403, network, throttling) is NOT "file missing"; abort
     // rather than report a misleading per-file verdict.
     console.error(`Cannot check "${Key}": ${e.name} (HTTP ${code ?? "?"}) — access problem, not a missing file.`);
     process.exit(1);
@@ -119,7 +119,7 @@ if (missing) {
 
 if (!apply) {
   console.log(`\nDry run: would delete ${toDelete.length} object(s) and prune ${files.filter((f) => inManifest.has(f)).length} manifest entr(ies).`);
-  // Hand back the normalised keys as a ready-to-paste apply string — pasted
+  // Hand back the normalised keys as a ready-to-paste apply string; pasted
   // URLs have already been reduced to bare filenames by this point.
   console.log(`\nTo apply — workflow: paste this into "files" and tick apply · local: rerun with --apply:\n`);
   console.log(files.join(" "));
@@ -131,7 +131,7 @@ const del = await s3.send(new DeleteObjectsCommand({
   Bucket: R2_BUCKET,
   Delete: { Objects: toDelete.map((Key) => ({ Key })), Quiet: true }
 }));
-// Quiet mode still reports failures — don't let a partial delete pass silently.
+// Quiet mode still reports failures; don't let a partial delete pass silently.
 if (del.Errors?.length) {
   del.Errors.forEach((e) => console.error(`Failed to delete ${e.Key}: ${e.Code} — ${e.Message}`));
   process.exit(1);
@@ -148,11 +148,11 @@ if (kept.length !== manifest.length) {
 // ── purge the edge cache ───────────────────────────────
 // Deleting the R2 object does NOT delete Cloudflare's cached copies: the Cache
 // Rule serves images with a month-long TTL, so a deleted frame keeps resolving
-// at its public URL until purged. (The gallery itself is clean within ~60s —
+// at its public URL until purged. (The gallery itself is clean within ~60s;
 // /api/manifest lists the bucket live.) Purging the original URL also purges
 // its cdn-cgi/image resized variants.
 // The public base comes from config.js (single source); purge credentials are
-// optional — without them the URLs are printed for a manual dashboard purge.
+// optional; without them the URLs are printed for a manual dashboard purge.
 const r2Base = (readFileSync("config.js", "utf8").match(/r2Base:\s*"([^"]*)"/) || [])[1] || "";
 const urls = r2Base ? toDelete.map((k) => r2Base + k) : [];
 const { CF_ZONE_ID, CF_CACHE_PURGE_TOKEN } = process.env;
