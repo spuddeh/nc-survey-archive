@@ -3,9 +3,11 @@
 // R2 *binding* on the Pages project (Settings → Functions → R2 bindings), bound
 // here as `SURVEY_BUCKET`.
 //
-// For each object it emits { file, date, ...tags } where `date` is the R2
-// upload time (o.uploaded) — so new uploads and their dates appear on the next
-// load.
+// For each object it emits { file, date, ...tags } where `date` is the frame's
+// original modification time, preserved by the uploader as `mtime` custom
+// metadata, falling back to the R2 upload time (o.uploaded) — so new uploads and
+// their dates appear on the next load. See `frameDate` below for why the
+// fallback is not the primary.
 // Per-frame metadata (project / stage / surveyor / time / weather / fov / feed)
 // lives in the committed static /manifest.json — the single per-frame metadata
 // source — and is merged onto the live listing. There are deliberately NO
@@ -17,6 +19,39 @@
 // the committed static /manifest.json so the site never regresses.
 
 const CACHE_SECONDS = 60;
+
+// `o.uploaded` is stamped by R2 when the object is written, so it survives
+// nothing: a bucket-to-bucket copy resets every frame to the copy time. The
+// 2026-07 Cloudflare account migration did exactly that — all 1,897 frames came
+// out dated within the same minute, which also flattened the newest-first sort
+// below into copy order.
+//
+// The uploader preserves the original as `mtime` custom metadata, which IS
+// carried across copies, so prefer it and keep `uploaded` as the fallback for
+// objects written without it.
+//
+// ⚠️ `mtime` is stored as a Unix epoch float in SECONDS, not ISO-8601:
+//
+//     X-Amz-Meta-Mtime: 1784170535.7193124
+//
+// `rclone lsjson` displays it as `2026-07-16T12:55:35.7193124+10:00`, which is
+// rclone formatting the value, not the value itself. `new Date(...)` on the raw
+// string yields Invalid Date, and a version of this function that assumed ISO
+// would have silently fallen back to `uploaded` forever while looking correct.
+// ISO input is still accepted in case a future uploader writes it that way.
+//
+// Everything returns `toISOString()` because the sort below is a plain string
+// compare, and `uploaded` is always `Z` — mixing formats would sort them
+// against each other incorrectly.
+function frameDate(o) {
+  const raw = o.customMetadata?.mtime ?? o.customMetadata?.Mtime;
+  if (raw) {
+    const epochSeconds = Number(raw);
+    const d = Number.isFinite(epochSeconds) ? new Date(epochSeconds * 1000) : new Date(raw);
+    if (!Number.isNaN(d.getTime())) return d.toISOString();
+  }
+  return o.uploaded.toISOString();
+}
 
 export async function onRequest(context) {
   const { env, request, waitUntil } = context;
@@ -60,7 +95,7 @@ export async function onRequest(context) {
         ...set("weather"),
         ...set("fov"),
         ...set("feed"),
-        date: o.uploaded.toISOString()
+        date: frameDate(o)
       });
     }
     cursor = page.truncated ? page.cursor : undefined;
