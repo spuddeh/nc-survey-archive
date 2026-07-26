@@ -80,7 +80,20 @@ export async function onRequest(context) {
   const out = [];
   let cursor;
   do {
-    const page = await bucket.list({ cursor, limit: 1000 });
+    // `include: ["customMetadata"]` is REQUIRED for frameDate to see `mtime`.
+    // list() omits custom metadata unless asked, so without this every object
+    // arrives with customMetadata undefined and frameDate silently falls back
+    // to `uploaded` for all of them.
+    //
+    // Only true on compatibility_date >= 2022-08-04; before that, list() acts
+    // as if both metadata kinds were requested no matter what `include` says.
+    // So omitting this works by accident on an old compat date and fails on a
+    // current one.
+    //
+    // Requesting metadata can also return FEWER than `limit` objects per page,
+    // which is why the loop below keys off `truncated` rather than counting
+    // results against the limit.
+    const page = await bucket.list({ cursor, limit: 1000, include: ["customMetadata"] });
     for (const o of page.objects) {
       if (!/\.(webp|jpg|jpeg|png)$/i.test(o.key)) continue;   // images only
       if (/_thumb\./i.test(o.key)) continue;                  // skip derivatives
